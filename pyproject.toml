@@ -1,0 +1,18 @@
+[tool.ruff]
+line-length = 100
+# Le local tourne encore en 3.10 : on interdit la syntaxe propre à 3.11+.
+target-version = "py310"
+# docs/ : la spec est rédigée à la main, Ruff ne doit pas reformater ses exemples.
+extend-exclude = ["*/migrations/*", "docs"]
+
+[tool.ruff.lint]
+# E/W : style PEP 8, F : erreurs (Pyflakes), I : ordre des imports,
+# B : bugs probables, UP : syntaxe moderne, DJ : bonnes pratiques Django.
+select = ["E", "W", "F", "I", "B", "UP", "DJ"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["tests.py", "test_*.py"]
+addopts = "-q"
+# WhiteNoise prévient que staticfiles/ n'existe pas tant que collectstatic n'a pas tourné.
+filterwarnings = ["ignore:No directory at:UserWarning"]
