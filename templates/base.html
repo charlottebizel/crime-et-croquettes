@@ -1,0 +1,136 @@
+{% comment %}
+  =====================================================================
+  templates/base.html — Gabarit commun à toutes les pages du jeu
+  =====================================================================
+  Toutes les pages héritent de ce fichier avec :
+      extends "base.html"   (entre accolades-pourcent, en 1re ligne)
+
+  Blocs disponibles (à redéfinir dans les pages filles) :
+      titre        → texte de l'onglet du navigateur
+      description  → balise meta description (référencement de la vitrine)
+      head_extra   → CSS ou balises supplémentaires propres à une page
+      entete       → le bandeau du haut (on peut le vider sur certaines pages)
+      nav          → les liens de navigation de l'entête
+      contenu      → le contenu principal de la page
+      scripts      → JavaScript propre à une page (chargé en fin de body)
+
+  Thème « nuit et polar » : couleurs, polices et composants sont définis
+  dans static/css/theme.css. Le décor (ville la nuit, pluie) est dans
+  templates/composants/decor_nuit.html.
+
+  ⚠ Rappel Django : un commentaire {# … #} doit tenir sur UNE ligne.
+  Pour plusieurs lignes, utiliser le bloc comment / endcomment.
+  {% endcomment %}
+{% load static %}<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  {# Indispensable pour que l'interface soit utilisable sur téléphone (O3). #}
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titre %}Crimes et Croquette{% endblock %}</title>
+  <meta name="description" content="{% block description %}Crimes et Croquette, le jeu d'enquête où des chats suspects sont interprétés par une IA. Interrogez-les, tirez les pièces à conviction et démasquez le coupable.{% endblock %}">
+
+  {% comment %}
+    Polices (Google Fonts) :
+      Bebas Neue    : titres façon tampon administratif
+      Special Elite : textes « machine à écrire » (dépositions, dossiers)
+      Caveat        : écriture manuscrite (notes de l'inspecteur)
+      Inter         : texte courant, lisible
+    ⚠ RGPD : charger depuis Google transmet l'adresse IP du visiteur à
+    Google. À mentionner dans la page légale, ou à remplacer plus tard par
+    des polices hébergées dans static/fonts/.
+  {% endcomment %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Special+Elite&family=Caveat:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  {# Feuille de style du thème (variables de couleurs + composants communs). #}
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+
+  {% comment %}
+    HTMX : permet de mettre à jour un morceau de page (une réponse de
+    suspect, une entrée du carnet…) sans recharger toute la page,
+    uniquement avec des attributs HTML (hx-get, hx-post, hx-target…).
+    Version figée pour éviter les surprises lors d'une mise à jour.
+  {% endcomment %}
+  <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+
+  {% block head_extra %}{% endblock %}
+</head>
+
+{% comment %}
+  hx-headers : chaque requête HTMX envoie automatiquement le jeton CSRF.
+  Sans ça, Django refuserait tous les POST faits par HTMX (erreur 403).
+{% endcomment %}
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+
+  {# Décor de fond (pluie, lune, ville) : purement décoratif, masqué aux lecteurs d'écran. #}
+  {% include "composants/decor_nuit.html" %}
+
+  {# Lien d'évitement : permet au clavier de sauter directement au contenu (accessibilité). #}
+  <a class="lien-evitement" href="#contenu">Aller au contenu</a>
+
+  {% block entete %}
+  <header class="entete">
+    <div class="conteneur entete__interieur">
+
+      {% comment %}
+        Logo + nom du jeu. Lien en dur vers l'accueil : à remplacer par la
+        balise url de Django quand les noms d'URL de l'app pages seront fixés.
+        Sans « apparence », le composant chat utilise les couleurs par défaut
+        de l'Inspecteur Moustache (pelage caramel).
+      {% endcomment %}
+      <a class="entete__logo" href="/">
+        <span class="entete__avatar">
+          {% include "composants/chat.html" with accessoire="inspecteur" label="Inspecteur Moustache" %}
+        </span>
+        <span class="entete__nom">Crimes et Croquette</span>
+      </a>
+
+      {% comment %}
+        Navigation : sera complétée dans les features suivantes (Mes parties,
+        Tarifs, Profil, Connexion/Déconnexion) quand les URLs correspondantes
+        existeront côté backend.
+      {% endcomment %}
+      <nav class="entete__nav" aria-label="Navigation principale">
+        {% block nav %}{% endblock %}
+      </nav>
+
+      {% if user.is_authenticated %}
+        <span class="entete__agent">Agent en service : <strong>{{ user.username }}</strong></span>
+      {% endif %}
+    </div>
+  </header>
+  {% endblock %}
+
+  {# Messages Django (« Compte créé », « Quota atteint »…) ajoutés par les vues. #}
+  {% if messages %}
+    <div class="conteneur">
+      <ul class="messages" role="status">
+        {% for message in messages %}
+          <li class="message message--{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <main id="contenu" class="conteneur contenu">
+    {% block contenu %}{% endblock %}
+  </main>
+
+  {% comment %}
+    Pied de page présent partout : transparence IA (AI Act art. 50,
+    exigence O7) et accès à la page légale depuis toute l'application.
+    Lien en dur vers /legal/ : à remplacer par la balise url de Django
+    quand la page légale existera côté backend.
+  {% endcomment %}
+  <footer class="pied">
+    <div class="conteneur pied__interieur">
+      <p>Les suspects de Crimes et Croquette sont interprétés par une intelligence artificielle. Leurs réponses sont générées automatiquement et peuvent être fausses : c'est le jeu.</p>
+      <p><a href="/legal/">Mentions légales, confidentialité et transparence IA</a></p>
+    </div>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>
