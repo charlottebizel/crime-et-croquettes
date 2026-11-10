@@ -1,0 +1,42 @@
+{% comment %}
+  =====================================================================
+  templates/composants/decor_nuit.html — Décor de fond « nuit et polar »
+  =====================================================================
+  Inclus une seule fois par base.html. Contient :
+    - une pluie fine (dessinée en CSS, classe .decor__pluie)
+    - une lune et une ville en silhouette avec quelques fenêtres
+      allumées et deux chats sur les toits (SVG)
+
+  Purement décoratif : aria-hidden="true" le cache aux lecteurs d'écran,
+  et pointer-events: none (dans theme.css) laisse passer les clics.
+  {% endcomment %}
+<div class="decor" aria-hidden="true">
+  <div class="decor__pluie"></div>
+
+  <svg class="decor__ville" viewBox="0 0 1440 320" preserveAspectRatio="xMidYMax slice">
+    {# Lune (deux cercles superposés = croissant) #}
+    <circle cx="1260" cy="70" r="38" fill="#F3E9C8" opacity="0.85"/>
+    <circle cx="1246" cy="62" r="34" fill="#0B111C" opacity="0.9"/>
+
+    {# Silhouette des immeubles #}
+    <path fill="#141D2D" d="M0 320 L0 190 L60 190 L60 150 L130 150 L130 200 L190 200 L190 120 L220 100 L250 120 L250 210 L330 210 L330 160 L400 160 L400 230 L470 230 L470 140 L540 140 L540 200 L620 200 L620 110 L650 90 L680 110 L680 220 L760 220 L760 170 L840 170 L840 130 L900 130 L900 210 L980 210 L980 150 L1060 150 L1060 230 L1130 230 L1130 120 L1200 120 L1200 190 L1280 190 L1280 160 L1360 160 L1360 210 L1440 210 L1440 320 Z"/>
+
+    {# Fenêtres allumées #}
+    <g fill="#F2B544" opacity="0.55">
+      <rect x="80" y="170" width="8" height="10"/><rect x="146" y="166" width="8" height="10"/>
+      <rect x="206" y="140" width="8" height="10"/><rect x="228" y="170" width="8" height="10"/>
+      <rect x="350" y="180" width="8" height="10"/><rect x="490" y="160" width="8" height="10"/>
+      <rect x="512" y="190" width="8" height="10"/><rect x="640" y="130" width="8" height="10"/>
+      <rect x="860" y="150" width="8" height="10"/><rect x="1000" y="170" width="8" height="10"/>
+      <rect x="1150" y="140" width="8" height="10"/><rect x="1170" y="170" width="8" height="10"/>
+      <rect x="1300" y="180" width="8" height="10"/>
+    </g>
+
+    {# Deux chats assis sur les toits #}
+    <g fill="#0B111C">
+      <path d="M610 112 L614 98 L620 106 L626 98 L630 112 Q632 122 626 128 L614 128 Q608 122 610 112 Z"/>
+      <path d="M628 124 Q646 120 640 104" stroke="#0B111C" stroke-width="3" fill="none"/>
+      <path d="M842 132 L845 120 L850 127 L855 120 L858 132 Q860 140 855 144 L845 144 Q840 140 842 132 Z"/>
+    </g>
+  </svg>
+</div>

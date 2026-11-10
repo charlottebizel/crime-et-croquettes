@@ -1,0 +1,480 @@
+/* =====================================================================
+   static/css/theme.css — Thème « nuit et polar » de Crimes et Croquette
+   =====================================================================
+   Organisation du fichier :
+     1. Variables (couleurs, polices, espacements) : à modifier ICI
+        pour changer l'apparence de tout le site.
+     2. Base (body, liens, focus, accessibilité)
+     3. Mise en page (conteneur, entête, pied de page)
+     4. Décor de fond (pluie, ville)
+     5. Composants réutilisables (boutons, panneaux, papier, tampon,
+        mention IA, messages, chat)
+     6. Responsive (téléphone)
+
+   Règle : les pages n'écrivent jamais une couleur en dur, elles utilisent
+   les variables (var(--ambre), var(--papier)…). Comme ça, le thème reste
+   cohérent partout.
+   ===================================================================== */
+
+
+/* ---------------------------------------------------------------------
+   1. Variables
+   --------------------------------------------------------------------- */
+:root {
+  /* Nuit (fonds) — du plus sombre au plus clair */
+  --nuit:        #0B111C;   /* fond de page */
+  --nuit-2:      #131C2B;   /* panneaux, champs */
+  --nuit-3:      #1B2638;   /* survol, éléments en relief */
+  --bord:        #2A3650;   /* bordures discrètes */
+  --bord-fort:   #3A4A6A;   /* bordures de champs */
+
+  /* Textes sur fond de nuit */
+  --texte:       #E8E4DA;   /* texte principal */
+  --texte-doux:  #9AA6B8;   /* texte secondaire (contraste vérifié ≥ 4.5:1) */
+  --titre:       #F3EEE2;
+
+  /* Accents */
+  --ambre:       #F2B544;   /* lumière de lampe : action principale */
+  --ambre-clair: #FFD27A;
+  --rouge:       #B8332B;   /* tampon, accusation, erreurs */
+  --rouge-vif:   #E05A4F;   /* stress élevé */
+  --vert:        #5FB3A1;   /* calme, validé */
+
+  /* Papier (carnet, dossiers, pièces à conviction) */
+  --papier:      #F1E8D2;
+  --kraft:       #D9C08C;   /* étiquettes de pièces à conviction */
+  --dossier:     #E9D7A8;   /* chemise cartonnée */
+  --encre:       #2B2320;   /* texte sur papier */
+  --encre-douce: #5E5249;
+  --encre-bleue: #24427A;   /* notes manuscrites de l'inspecteur */
+  --vert-encre:  #1F5E50;   /* « fiable », preuves */
+
+  /* Polices (chargées dans base.html) */
+  --police-titre:   "Bebas Neue", Impact, "Arial Narrow", sans-serif;
+  --police-machine: "Special Elite", "Courier New", monospace;
+  --police-main:    "Caveat", "Comic Sans MS", cursive;
+  --police-texte:   "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Formes et espacements */
+  --rayon:       6px;
+  --rayon-grand: 12px;
+  --ombre:       0 20px 40px rgba(0, 0, 0, 0.5);
+  --largeur-max: 1400px;
+}
+
+
+/* ---------------------------------------------------------------------
+   2. Base
+   --------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--nuit);
+  color: var(--texte);
+  font-family: var(--police-texte);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+h1, h2, h3 {
+  font-family: var(--police-titre);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--titre);
+  line-height: 1.1;
+  margin: 0 0 0.5em;
+}
+h1 { font-size: clamp(32px, 5vw, 48px); }
+h2 { font-size: 26px; }
+h3 { font-size: 20px; }
+
+a {
+  color: var(--ambre);
+}
+a:hover {
+  color: var(--ambre-clair);
+}
+
+/* Contour visible au clavier (accessibilité). On ne le supprime jamais. */
+:focus-visible {
+  outline: 3px solid var(--ambre);
+  outline-offset: 2px;
+}
+
+/* Lien « Aller au contenu » : invisible sauf quand on y arrive au clavier. */
+.lien-evitement {
+  position: absolute;
+  left: 8px;
+  top: -60px;
+  z-index: 100;
+  padding: 10px 16px;
+  background: var(--ambre);
+  color: var(--nuit);
+  font-weight: 700;
+  border-radius: var(--rayon);
+}
+.lien-evitement:focus {
+  top: 8px;
+}
+
+/* Texte présent pour les lecteurs d'écran mais invisible à l'écran. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Respecte le réglage « réduire les animations » du système. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+
+/* ---------------------------------------------------------------------
+   3. Mise en page
+   --------------------------------------------------------------------- */
+.conteneur {
+  position: relative;          /* passe au-dessus du décor */
+  z-index: 1;
+  width: 100%;
+  max-width: var(--largeur-max);
+  margin: 0 auto;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.contenu {
+  flex: 1;                     /* pousse le pied de page en bas */
+  padding-top: 24px;
+  padding-bottom: 140px;       /* laisse voir la ville en bas de page */
+}
+
+/* Entête */
+.entete {
+  position: relative;
+  z-index: 2;
+  border-bottom: 1px solid var(--bord);
+}
+.entete__interieur {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 24px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+.entete__logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--titre);
+}
+.entete__avatar {
+  display: block;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid var(--ambre);
+  background: var(--nuit-3);
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(242, 181, 68, 0.3);
+}
+.entete__nom {
+  font-family: var(--police-titre);
+  font-size: 32px;
+  letter-spacing: 0.14em;
+  line-height: 1;
+}
+.entete__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin-left: auto;
+}
+.entete__nav a {
+  font-family: var(--police-titre);
+  font-size: 19px;
+  letter-spacing: 0.12em;
+  color: var(--texte);
+  text-decoration: none;
+  padding: 6px 0;
+}
+.entete__nav a:hover,
+.entete__nav a[aria-current="page"] {
+  color: var(--ambre);
+}
+.entete__agent {
+  font-family: var(--police-machine);
+  font-size: 13px;
+  color: var(--texte-doux);
+}
+
+/* Pied de page */
+.pied {
+  position: relative;
+  z-index: 1;
+  background: rgba(11, 17, 28, 0.92);
+  border-top: 1px solid var(--bord);
+  font-size: 13px;
+  color: var(--texte-doux);
+}
+.pied__interieur {
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+.pied p {
+  margin: 0 0 6px;
+}
+
+
+/* ---------------------------------------------------------------------
+   4. Décor de fond
+   --------------------------------------------------------------------- */
+.decor {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;        /* ne bloque jamais un clic */
+  overflow: hidden;
+}
+/* Pluie : fines lignes obliques répétées */
+.decor__pluie {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    105deg,
+    transparent 0px,
+    transparent 22px,
+    rgba(160, 190, 230, 0.05) 22px,
+    rgba(160, 190, 230, 0.05) 23px
+  );
+}
+.decor__ville {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 320px;
+}
+
+
+/* ---------------------------------------------------------------------
+   5. Composants réutilisables
+   --------------------------------------------------------------------- */
+
+/* --- Boutons ---
+   <button class="btn">…</button>              bouton secondaire
+   <button class="btn btn--ambre">…</button>   action principale
+   <button class="btn btn--tampon">…</button>  accusation (tampon rouge) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;            /* zone tactile confortable sur téléphone */
+  padding: 0 20px;
+  border: 1px solid var(--bord-fort);
+  border-radius: var(--rayon);
+  background: var(--nuit-2);
+  color: var(--texte);
+  font-family: var(--police-titre);
+  font-size: 21px;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn:hover {
+  background: var(--nuit-3);
+}
+.btn--ambre {
+  border: none;
+  background: var(--ambre);
+  color: var(--nuit);
+}
+.btn--ambre:hover {
+  background: var(--ambre-clair);
+}
+.btn--tampon {
+  border: 3px double #FFD9D4;
+  background: var(--rouge);
+  color: #FFFFFF;
+  font-size: 26px;
+  letter-spacing: 0.16em;
+  transform: rotate(2deg);
+  box-shadow: 0 6px 18px rgba(184, 51, 43, 0.45);
+}
+.btn--tampon:hover {
+  background: #A12A23;
+}
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --- Panneau sombre --- */
+.panneau {
+  background: var(--nuit-2);
+  border: 1px solid var(--bord);
+  border-radius: var(--rayon-grand);
+  padding: 16px;
+  box-shadow: var(--ombre);
+}
+
+/* --- Titre de section numéroté (« 01 SUSPECTS ») ---
+   <h2 class="titre-section"><span class="titre-section__num">01</span>Suspects</h2> */
+.titre-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 26px;
+  letter-spacing: 0.2em;
+}
+.titre-section__num {
+  font-family: var(--police-machine);
+  font-size: 13px;
+  letter-spacing: 0;
+  color: var(--ambre);
+}
+
+/* --- Papier (carnet, fiche, dossier) : fond clair + encre foncée --- */
+.papier {
+  background: var(--papier);
+  color: var(--encre);
+  border-radius: var(--rayon);
+  box-shadow: var(--ombre);
+}
+.papier a {
+  color: var(--rouge);
+}
+
+/* Texte machine à écrire / écriture manuscrite */
+.machine {
+  font-family: var(--police-machine);
+}
+.manuscrit {
+  font-family: var(--police-main);
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1.15;
+  color: var(--encre-bleue);
+}
+
+/* --- Tampon (« CONFIDENTIEL », « NOUVEAU ») --- */
+.tampon {
+  display: inline-block;
+  padding: 2px 10px;
+  border: 2px solid #8E2620;
+  background: var(--rouge);
+  color: #FFFFFF;
+  font-family: var(--police-titre);
+  font-size: 18px;
+  letter-spacing: 0.12em;
+  transform: rotate(-4deg);
+}
+
+/* --- Mention « Généré par IA » (exigence O7 / AI Act) ---
+   À placer sous CHAQUE sortie du modèle. */
+.mention-ia {
+  font-size: 12px;
+  color: var(--texte-doux);
+}
+.papier .mention-ia {
+  color: var(--encre-douce);
+}
+
+/* --- Messages Django --- */
+.messages {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.message {
+  padding: 10px 14px;
+  border-radius: var(--rayon);
+  border-left: 4px solid var(--ambre);
+  background: var(--nuit-2);
+}
+.message--success { border-left-color: var(--vert); }
+.message--error   { border-left-color: var(--rouge-vif); }
+.message--warning { border-left-color: var(--ambre); }
+
+/* --- Formulaires --- */
+.champ {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--bord-fort);
+  border-radius: var(--rayon);
+  background: var(--nuit-2);
+  color: var(--texte);
+  font-family: var(--police-machine);
+  font-size: 15px;
+}
+.champ::placeholder {
+  color: var(--texte-doux);
+}
+.etiquette {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--police-machine);
+  font-size: 13px;
+  color: var(--texte-doux);
+}
+
+/* --- Portrait de chat (templates/composants/chat.html) ---
+   Le SVG prend toute la place de son parent : c'est le parent qui
+   décide de la taille. */
+.chat {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+
+/* ---------------------------------------------------------------------
+   6. Responsive (téléphone)
+   --------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  .conteneur {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .entete__nom {
+    font-size: 24px;
+  }
+  .entete__avatar {
+    width: 42px;
+    height: 42px;
+  }
+  .entete__nav {
+    margin-left: 0;
+    width: 100%;
+  }
+  .decor__ville {
+    height: 200px;
+  }
+}

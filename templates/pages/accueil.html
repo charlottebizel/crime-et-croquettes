@@ -1,13 +1,64 @@
-{# Template minimal créé par le backend — à remplacer par le frontend. #}
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Crimes et Croquette</title>
-</head>
-<body>
-  <h1>Crimes et Croquette</h1>
-  <p>L'Inspecteur Moustache mène l'enquête. Le site est en construction.</p>
-</body>
-</html>
+{% extends "base.html" %}
+{% comment %}
+  =====================================================================
+  templates/pages/accueil.html — Page d'accueil (version provisoire)
+  =====================================================================
+  Hérite de base.html : l'entête, le décor de nuit, le thème et le pied
+  de page (mention IA + lien légal) sont donc déjà présents.
+
+  Cette version garde le contenu « en construction » de Charlotte.
+  La vraie landing page (bénéfices, captures, paliers, appel à l'action)
+  sera faite dans une feature dédiée (exigence O6).
+  {% endcomment %}
+
+{% block titre %}Crimes et Croquette · Le jeu d'enquête des chats{% endblock %}
+
+{% block contenu %}
+<section class="accueil">
+
+  {# Grand portrait de l'inspecteur. Le conteneur fixe la taille du SVG. #}
+  <div class="accueil__portrait">
+    {% include "composants/chat.html" with accessoire="inspecteur" label="L'Inspecteur Moustache" %}
+  </div>
+
+  <div class="accueil__texte">
+    <span class="tampon">En construction</span>
+    <h1>Crimes et Croquette</h1>
+    <p class="machine">L'Inspecteur Moustache mène l'enquête. Le site est en construction.</p>
+  </div>
+
+</section>
+{% endblock %}
+
+{% block head_extra %}
+{# Styles de cette page provisoire (remplacés avec la vraie landing). Couleurs = variables de theme.css. #}
+<style>
+  .accueil {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 32px;
+    padding-top: 40px;
+  }
+  .accueil__portrait {
+    flex: none;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    border: 3px solid var(--ambre);
+    background: var(--nuit-3);
+    overflow: hidden;
+    box-shadow: 0 0 40px rgba(242, 181, 68, 0.35);
+  }
+  .accueil__texte {
+    flex: 1 1 300px;
+  }
+  .accueil__texte h1 {
+    margin-top: 12px;
+  }
+  .accueil__texte p {
+    font-size: 17px;
+    color: var(--texte-doux);
+  }
+</style>
+{% endblock %}
