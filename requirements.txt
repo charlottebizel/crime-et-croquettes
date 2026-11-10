@@ -1,0 +1,13 @@
+# Application
+Django>=5.2,<5.3
+dj-database-url>=2.3
+psycopg[binary]>=3.2
+python-dotenv>=1.0
+gunicorn>=23.0
+whitenoise>=6.8
+openai>=1.50
+
+# Qualité et tests
+ruff>=0.8
+pytest>=8.3
+pytest-django>=4.9
