@@ -1,3 +1,6 @@
 from django.shortcuts import render
 
-# Create your views here.
+
+def accueil(request):
+    """Landing page publique (template remplacé par le frontend)."""
+    return render(request, "pages/accueil.html")
