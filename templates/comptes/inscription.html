@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% comment %}
+  =====================================================================
+  templates/comptes/inscription.html — Créer un compte joueur
+  =====================================================================
+  Vue : comptes.views.inscription   ·   URL : comptes:inscription
+  Contexte : form (InscriptionForm)
+
+  Présenté comme un « dossier de recrutement » d'agent.
+  novalidate : on laisse Django valider et afficher ses messages en
+  français, pour avoir les mêmes erreurs partout.
+  {% endcomment %}
+
+{% block titre %}Inscription · Crimes et Croquette{% endblock %}
+{% block description %}Créez votre compte d'agent et menez vos propres enquêtes avec l'Inspecteur Moustache.{% endblock %}
+
+{% block contenu %}
+<section class="page-formulaire">
+  <div class="dossier">
+    <span class="dossier__onglet">Dossier d'agent</span>
+    <span class="tampon dossier__tampon">Recrutement</span>
+
+    <h1 class="dossier__titre">Rejoindre la brigade</h1>
+    <p class="dossier__intro machine">Ouvrez votre dossier pour interroger les suspects, réunir les pièces à conviction et démasquer le coupable.</p>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "composants/erreurs_formulaire.html" %}
+
+      {% for champ in form %}
+        {% include "composants/champ.html" with champ=champ %}
+      {% endfor %}
+
+      {# Lien en dur vers /legal/ : à remplacer par la balise url quand la page légale existera. #}
+      <p class="dossier__mention">Vos questions aux suspects sont envoyées à un service d'IA. N'y écrivez jamais de données personnelles ou sensibles. Détails dans la <a href="/legal/">politique de confidentialité</a>.</p>
+
+      <button class="btn btn--ambre btn--large" type="submit">Signer mon engagement</button>
+    </form>
+
+    <p class="dossier__bas">Déjà agent ? <a href="{% url 'comptes:connexion' %}">Se connecter</a></p>
+  </div>
+</section>
+{% endblock %}
