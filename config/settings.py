@@ -123,6 +123,13 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+# Où envoyer un visiteur non connecté qui demande une page protégée
+# (@login_required), et où aller après connexion / déconnexion.
+# LOGIN_REDIRECT_URL passera à "jeu:liste" quand la page « Mes parties » existera.
+LOGIN_URL = "comptes:connexion"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
+
 
 # --- Langue et fuseau horaire -------------------------------------------
 

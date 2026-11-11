@@ -455,6 +455,154 @@ a:hover {
 }
 
 
+/* --- Entête : liens de compte (ajout feature/comptes) --- */
+.entete__nav {
+  align-items: center;
+}
+.entete__form {
+  margin: 0;
+}
+/* Bouton « Déconnexion » qui ressemble aux autres liens du menu. */
+.entete__lien-bouton {
+  padding: 6px 0;
+  border: none;
+  background: none;
+  color: var(--texte);
+  font-family: var(--police-titre);
+  font-size: 19px;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+}
+.entete__lien-bouton:hover {
+  color: var(--ambre);
+}
+/* Un bouton ambre dans le menu garde son texte foncé. */
+.entete__nav a.btn--ambre,
+.entete__nav a.btn--ambre:hover {
+  color: var(--nuit);
+}
+
+/* Variantes de taille des boutons */
+.btn--petit {
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 18px;
+}
+.btn--large {
+  width: 100%;
+}
+
+/* --- Pages formulaire (inscription, connexion…) : le « dossier » ---
+   Une chemise cartonnée posée sur le bureau de nuit, avec un onglet
+   et un tampon. Les champs y deviennent clairs (papier). */
+.page-formulaire {
+  display: flex;
+  justify-content: center;
+  padding-top: 24px;
+}
+.dossier {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  padding: 36px 28px 24px;
+  background: var(--dossier);
+  color: var(--encre);
+  border-radius: 4px 12px 12px 12px;
+  box-shadow: var(--ombre);
+}
+.dossier__onglet {
+  position: absolute;
+  left: 0;
+  top: -30px;
+  padding: 6px 16px 4px;
+  background: var(--dossier);
+  border-radius: 8px 8px 0 0;
+  font-family: var(--police-machine);
+  font-size: 13px;
+}
+.dossier__tampon {
+  position: absolute;
+  right: 18px;
+  top: -16px;   /* à cheval sur le bord : ne recouvre jamais le titre */
+}
+.dossier__titre {
+  margin: 8px 0 6px;
+  color: var(--encre);
+  font-size: clamp(30px, 6vw, 40px);
+}
+.dossier__intro {
+  margin: 0 0 20px;
+  font-size: 14px;
+}
+.dossier__mention {
+  margin: 4px 0 18px;
+  font-size: 12px;
+  color: var(--encre-douce);
+}
+.dossier__bas {
+  margin: 18px 0 0;
+  font-size: 14px;
+  text-align: center;
+}
+.dossier a {
+  color: var(--rouge);
+  font-weight: 600;
+}
+.dossier .etiquette {
+  color: var(--encre-douce);
+}
+.dossier .champ {
+  background: #FFFCF3;
+  color: var(--encre);
+  border-color: #B9AA8C;
+}
+.dossier .champ::placeholder {
+  color: #8A7E6E;
+}
+
+/* --- Champs, aide et erreurs --- */
+.groupe-champ {
+  margin-bottom: 16px;
+}
+.aide-champ {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--texte-doux);
+}
+.dossier .aide-champ {
+  color: var(--encre-douce);
+}
+.aide-champ ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+.erreur-champ {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rouge-vif);
+}
+.dossier .erreur-champ {
+  color: var(--rouge);
+}
+.groupe-champ--erreur .champ {
+  border-color: var(--rouge);
+  border-width: 2px;
+}
+.erreurs-formulaire {
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border-left: 4px solid var(--rouge);
+  background: rgba(184, 51, 43, 0.1);
+  color: var(--rouge);
+  font-weight: 600;
+  font-size: 14px;
+}
+.erreurs-formulaire p {
+  margin: 0;
+}
+
+
 /* ---------------------------------------------------------------------
    6. Responsive (téléphone)
    --------------------------------------------------------------------- */

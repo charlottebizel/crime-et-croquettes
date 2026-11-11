@@ -121,14 +121,52 @@ Accessoires disponibles : `couronne`, `serviette`, `pelote`, `monocle`, `bandana
 
 HTMX est chargé dans `base.html`. Le jeton CSRF est envoyé automatiquement avec chaque requête HTMX (attribut `hx-headers` sur `<body>`), donc les `hx-post` fonctionnent sans rien ajouter.
 
+### Formulaires
+
+Chaque champ s'affiche avec le composant commun (libellé, aide, erreurs) :
+
+```django
+<form method="post" novalidate>
+  {% csrf_token %}
+  {% include "composants/erreurs_formulaire.html" %}
+  {% for champ in form %}
+    {% include "composants/champ.html" with champ=champ %}
+  {% endfor %}
+  <button class="btn btn--ambre btn--large" type="submit">Valider</button>
+</form>
+```
+
+Les pages de formulaire utilisent le style « dossier » (`.page-formulaire`, `.dossier`, `.dossier__onglet`, `.dossier__tampon`, `.dossier__titre`).
+
 ### Accessibilité et transparence IA
 
 - Lien « Aller au contenu », contour de focus visible, textes alternatifs sur les illustrations.
 - Le pied de page rappelle sur toutes les pages que les suspects sont interprétés par une IA, avec un lien vers la page légale.
 - Chaque réponse du modèle doit afficher la mention `<span class="mention-ia">Généré par IA</span>`.
 
+## Comptes joueurs
+
+| Page | URL | Nom Django |
+|---|---|---|
+| Inscription | `/comptes/inscription/` | `comptes:inscription` |
+| Connexion | `/comptes/connexion/` | `comptes:connexion` |
+| Déconnexion (POST uniquement) | `/comptes/deconnexion/` | `comptes:deconnexion` |
+
+- L'inscription demande un nom d'agent, un e-mail unique et un mot de passe (règles de sécurité de Django), puis connecte le joueur directement.
+- Le rôle administrateur n'est jamais donné à l'inscription : il se donne avec `python manage.py createsuperuser` ou dans l'admin Django.
+- Après connexion ou déconnexion, on revient à l'accueil (`LOGIN_REDIRECT_URL` et `LOGOUT_REDIRECT_URL` dans `config/settings.py`).
+
+### Tests
+
+```bash
+python manage.py test comptes      # ou : pytest
+```
+
+Les tests utilisent le stockage de fichiers statiques simple de Django (`override_settings`), car le stockage WhiteNoise de production exige `collectstatic`.
+
 ## Historique des features
 
 | Feature | Branche | Contenu |
 |---|---|---|
 | Gabarit de base | `feature/base-template` | `base.html`, thème CSS, décor de nuit, composant d'illustration des chats |
+| Comptes | `feature/comptes` | Inscription, connexion, déconnexion, menu de l'entête, composants de formulaire, 9 tests |
