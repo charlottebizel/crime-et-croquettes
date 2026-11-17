@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% comment %}
+  =====================================================================
+  templates/comptes/connexion.html — Se connecter
+  =====================================================================
+  Vue : comptes.views.Connexion (LoginView)   ·   URL : comptes:connexion
+  Contexte fourni par Django :
+      form  → ConnexionForm
+      next  → page demandée avant la connexion (renvoyée après)
+  {% endcomment %}
+
+{% block titre %}Connexion · Crimes et Croquette{% endblock %}
+
+{% block contenu %}
+<section class="page-formulaire">
+  <div class="dossier">
+    <span class="dossier__onglet">Accès réservé</span>
+    <span class="tampon dossier__tampon">Confidentiel</span>
+
+    <h1 class="dossier__titre">Entrer au commissariat</h1>
+    <p class="dossier__intro machine">Montrez votre badge, agent. Vos enquêtes en cours vous attendent.</p>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "composants/erreurs_formulaire.html" %}
+
+      {% for champ in form %}
+        {% include "composants/champ.html" with champ=champ %}
+      {% endfor %}
+
+      {# Après connexion, Django renvoie vers la page demandée au départ (si elle existe). #}
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+      <button class="btn btn--ambre btn--large" type="submit">Entrer</button>
+    </form>
+
+    <p class="dossier__bas">Pas encore agent ? <a href="{% url 'comptes:inscription' %}">Rejoindre la brigade</a></p>
+  </div>
+</section>
+{% endblock %}

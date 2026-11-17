@@ -1,0 +1,24 @@
+{% comment %}
+  =====================================================================
+  templates/composants/champ.html — Un champ de formulaire complet
+  =====================================================================
+  Affiche : libellé, champ, texte d'aide et erreurs, toujours de la même
+  façon dans tout le site.
+
+  Utilisation (dans une boucle sur le formulaire) :
+      for champ in form  →  include "composants/champ.html" with champ=champ
+
+  Accessibilité : Django ajoute lui-même aria-describedby (lien vers
+  l'aide) et aria-invalid (quand il y a une erreur) sur le champ.
+  {% endcomment %}
+<div class="groupe-champ{% if champ.errors %} groupe-champ--erreur{% endif %}">
+  <label class="etiquette" for="{{ champ.id_for_label }}">{{ champ.label }}</label>
+  {{ champ }}
+  {% if champ.help_text %}
+    {# L'aide des mots de passe vient de Django (liste HTML de confiance), d'où |safe. #}
+    <div class="aide-champ" id="{{ champ.auto_id }}_helptext">{{ champ.help_text|safe }}</div>
+  {% endif %}
+  {% for erreur in champ.errors %}
+    <p class="erreur-champ">{{ erreur }}</p>
+  {% endfor %}
+</div>

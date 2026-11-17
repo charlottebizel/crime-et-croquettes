@@ -88,17 +88,27 @@
       </a>
 
       {% comment %}
-        Navigation : sera complétée dans les features suivantes (Mes parties,
-        Tarifs, Profil, Connexion/Déconnexion) quand les URLs correspondantes
-        existeront côté backend.
+        Navigation. On n'ajoute un lien que quand son URL existe côté
+        backend (sinon la balise url fait planter la page) :
+          - maintenant : Connexion, S'inscrire, Déconnexion ;
+          - feature S4 : Nouvelle enquête, Mes parties ;
+          - plus tard  : Tarifs, Profil.
+        La déconnexion est un formulaire POST (exigé par Django 5).
       {% endcomment %}
       <nav class="entete__nav" aria-label="Navigation principale">
-        {% block nav %}{% endblock %}
+        {% block nav %}
+          {% if user.is_authenticated %}
+            <span class="entete__agent">Agent en service : <strong>{{ user.username }}</strong></span>
+            <form class="entete__form" method="post" action="{% url 'comptes:deconnexion' %}">
+              {% csrf_token %}
+              <button type="submit" class="entete__lien-bouton">Déconnexion</button>
+            </form>
+          {% else %}
+            <a href="{% url 'comptes:connexion' %}"{% if request.resolver_match.view_name == "comptes:connexion" %} aria-current="page"{% endif %}>Connexion</a>
+            <a class="btn btn--ambre btn--petit" href="{% url 'comptes:inscription' %}">S'inscrire</a>
+          {% endif %}
+        {% endblock %}
       </nav>
-
-      {% if user.is_authenticated %}
-        <span class="entete__agent">Agent en service : <strong>{{ user.username }}</strong></span>
-      {% endif %}
     </div>
   </header>
   {% endblock %}
