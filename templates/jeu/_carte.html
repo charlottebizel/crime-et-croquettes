@@ -1,0 +1,14 @@
+{% comment %}
+  templates/jeu/_carte.html — Une pièce à conviction tirée
+  --------------------------------------------------------
+  Contexte : carte (CartePreuve : code, titre, texte, etiquette).
+  Les cartes sont tirées par notre code, jamais par l'IA : elles sont
+  toujours vraies. Réutilisé en HTMX après « Tirer une carte » (spec §5.4).
+{% endcomment %}
+<article class="piece">
+  <span class="piece__oeillet" aria-hidden="true"></span>
+  <p class="piece__code machine">Pièce n° {{ carte.code }}</p>
+  <h3 class="piece__titre">{{ carte.titre }}</h3>
+  <p class="piece__texte machine">{{ carte.texte }}</p>
+  <p class="piece__etiquette">{{ carte.etiquette }}</p>
+</article>

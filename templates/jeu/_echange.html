@@ -1,0 +1,40 @@
+{% comment %}
+  templates/jeu/_echange.html — Bulles de dialogue
+  ------------------------------------------------
+  Contexte : echange (liste de dicts message, spec §6.3), suspect_courant,
+  inspecteur (apparence de l'avatar du joueur).
+
+  Sur la page : toute la conversation avec le suspect courant.
+  En HTMX (spec §5.4) : seulement la question + la réponse qui viennent
+  d'être échangées, ajoutées à la fin de #conversation.
+
+  Chaque réponse du suspect porte la mention « Généré par IA »
+  (exigence O7 et AI Act art. 50).
+{% endcomment %}
+{% for message in echange %}
+  {% if message.est_suspect %}
+    <div class="bulle bulle--suspect">
+      <p class="bulle__auteur">{{ suspect_courant.nom }}</p>
+      <p class="bulle__texte">{{ message.texte }}</p>
+      <p class="bulle__infos">
+        <span class="mention-ia">Généré par IA</span>
+        {% if message.stress_avant is not None %}
+          <span class="bulle__stress machine">Stress {{ message.stress_avant }} → {{ message.stress_apres }} %</span>
+        {% endif %}
+        {% if message.a_ajoute_au_carnet %}
+          <span class="bulle__carnet">Ajouté au carnet</span>
+        {% endif %}
+      </p>
+    </div>
+  {% else %}
+    <div class="bulle bulle--joueur">
+      <div class="bulle__contenu">
+        <p class="bulle__auteur">{{ message.auteur }}</p>
+        <p class="bulle__texte">{{ message.texte }}</p>
+      </div>
+      <span class="bulle__avatar" aria-hidden="true">
+        {% include "composants/chat.html" with apparence=inspecteur accessoire="inspecteur" label="" %}
+      </span>
+    </div>
+  {% endif %}
+{% endfor %}

@@ -164,9 +164,20 @@ python manage.py test comptes      # ou : pytest
 
 Les tests utilisent le stockage de fichiers statiques simple de Django (`override_settings`), car le stockage WhiteNoise de production exige `collectstatic`.
 
+## Écran de partie (démo)
+
+Adresse : `/parties/demo/` (nom Django `jeu:partie_demo`), publique, sans base de données ni IA. Paramètre `?suspect=<id>` pour choisir le suspect interrogé.
+
+- Données en dur : `jeu/demo.py`, au format exact de `docs/specification.md` §6.1 à §6.6. Les vraies vues enverront les mêmes variables au même template.
+- La conversation s'appelle `echanges` dans le contexte (et pas `messages`, réservé aux notifications Django affichées par `base.html`).
+- Template : `templates/jeu/partie.html` et ses fragments (`_carte_suspect`, `_jauge_stress`, `_echange`, `_carte`, `_entree_carnet`, `_case_fiche`, `_compteurs`), réutilisables tels quels pour les réponses HTMX (spec §5.4).
+- Styles : `static/css/partie.css` (chargé seulement par cette page). JavaScript : `static/js/partie.js` (onglets Carnet / Fiche, accessibles au clavier ; sans JavaScript, les deux panneaux s'affichent l'un sous l'autre).
+- En démo, les actions qui demandent le backend (Interroger, Tirer une carte, avis, cases de la fiche, Accuser) sont affichées mais inactives.
+
 ## Historique des features
 
 | Feature | Branche | Contenu |
 |---|---|---|
 | Gabarit de base | `feature/base-template` | `base.html`, thème CSS, décor de nuit, composant d'illustration des chats |
 | Comptes | `feature/comptes` | Inscription, connexion, déconnexion, menu de l'entête, composants de formulaire, 9 tests |
+| Écran de partie (démo) | `feature/ecran-partie` | Écran de jeu en données en dur, fragments HTMX, onglets carnet / fiche, 17 tests |

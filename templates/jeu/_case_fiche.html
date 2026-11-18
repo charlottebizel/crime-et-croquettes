@@ -1,0 +1,14 @@
+{% comment %}
+  templates/jeu/_case_fiche.html — Une case de la fiche de déduction
+  ------------------------------------------------------------------
+  Contexte : case ({id, nom, etat}, spec §6.5), mode_demo.
+  etat : inconnu | barre | valide. Un clic fera tourner l'état
+  (inconnu → barré → validé → inconnu) via la vue jeu:case_fiche (HTMX),
+  sans aucun appel à l'IA. Démo : bouton inactif.
+{% endcomment %}
+<button type="button" id="case-{{ case.id }}" class="case case--{{ case.etat }}"
+        {% if mode_demo %}disabled title="Disponible quand le jeu sera branché"{% endif %}>
+  <span class="case__marque" aria-hidden="true">{% if case.etat == "barre" %}✕{% elif case.etat == "valide" %}✓{% endif %}</span>
+  <span class="case__nom">{{ case.nom }}</span>
+  <span class="case__etat">{% if case.etat == "barre" %}Barré{% elif case.etat == "valide" %}Validé{% else %}Inconnu{% endif %}</span>
+</button>

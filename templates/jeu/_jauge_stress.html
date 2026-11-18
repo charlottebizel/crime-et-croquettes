@@ -1,0 +1,27 @@
+{% comment %}
+  templates/jeu/_jauge_stress.html — Grande jauge de stress (salle d'interrogatoire)
+  --------------------------------------------------------------------------------
+  Contexte : suspect_courant (dict spec §6.2).
+  Remplacée en HTMX après chaque réponse (cible #jauge-stress, spec §5.4).
+
+  Le stress est envoyé par l'IA dans son JSON, validé (0–100) et stocké par
+  le backend : ici on ne fait que l'afficher, sans appel au modèle (le « Z »
+  de l'exigence O1).
+{% endcomment %}
+<div id="jauge-stress" class="jauge-stress stress--{{ suspect_courant.stress_niveau }}">
+  <div class="jauge-stress__haut">
+    <span class="jauge-stress__titre">Stress</span>
+    <span class="jauge-stress__valeur machine">{{ suspect_courant.stress }} %</span>
+  </div>
+  {# role="meter" : les lecteurs d'écran annoncent une valeur entre 0 et 100. #}
+  <div class="barre-stress barre-stress--grande" role="meter"
+       aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ suspect_courant.stress }}"
+       aria-label="Stress de {{ suspect_courant.nom }}">
+    <span class="barre-stress__niveau" style="width: {{ suspect_courant.stress }}%"></span>
+  </div>
+  <span class="jauge-stress__libelle">
+    {% if suspect_courant.stress_niveau == "nerveux" %}Nerveux : il cache quelque chose ?
+    {% elif suspect_courant.stress_niveau == "mal_a_l_aise" %}Mal à l'aise
+    {% else %}Calme{% endif %}
+  </span>
+</div>

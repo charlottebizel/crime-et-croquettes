@@ -1,0 +1,890 @@
+/* =====================================================================
+   static/css/partie.css — Écran de partie (ticket LB-001)
+   =====================================================================
+   Chargé uniquement par templates/jeu/partie.html (bloc head_extra).
+   Utilise les variables de theme.css (couleurs, polices) : aucune couleur
+   « métier » n'est inventée ici, sauf les teintes de la salle et du papier.
+
+   Sommaire :
+     1. Bandeau de démo et entête de l'affaire
+     2. Plateau en trois colonnes (et empilement sur téléphone)
+     3. Fiches suspects (toise) et jauges de stress
+     4. Pièces à conviction
+     5. Salle d'interrogatoire et conversation
+     6. Onglets, carnet d'indices, fiche de déduction
+   ===================================================================== */
+
+
+/* ---------------------------------------------------------------------
+   1. Bandeau de démo et entête de l'affaire
+   --------------------------------------------------------------------- */
+.bandeau-demo {
+  margin: 0 0 18px;
+  padding: 10px 14px;
+  border: 1px dashed var(--ambre);
+  border-radius: var(--rayon);
+  background: rgba(242, 181, 68, 0.08);
+  font-size: 14px;
+}
+
+.affaire {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+/* Le dossier kraft avec son tampon « Confidentiel ». */
+.affaire__dossier {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 18px 10px 14px;
+  background: var(--dossier);
+  color: var(--encre);
+  border-radius: 3px 10px 3px 3px;
+  box-shadow: var(--ombre);
+  transform: rotate(-0.6deg);
+  max-width: 100%;
+}
+.affaire__tampon {
+  flex: none;
+}
+.affaire__numero {
+  margin: 0;
+  font-size: 13px;
+}
+.affaire__titre {
+  margin: 0;
+  color: var(--encre);
+  font-size: clamp(22px, 3.2vw, 30px);
+  letter-spacing: 0.06em;
+}
+.affaire__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.compteurs {
+  display: flex;
+  gap: 10px;
+}
+.compteur {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--bord-fort);
+  border-radius: var(--rayon);
+  background: var(--nuit-2);
+  color: var(--ambre);
+}
+.compteur .machine {
+  color: var(--texte);
+}
+
+.synopsis {
+  margin-bottom: 20px;
+  color: var(--texte-doux);
+}
+.synopsis summary {
+  cursor: pointer;
+  color: var(--ambre);
+  padding: 6px 0;
+}
+.synopsis p {
+  max-width: 70ch;
+  margin: 6px 0 0;
+}
+
+.texte-doux {
+  color: var(--texte-doux);
+}
+
+
+/* ---------------------------------------------------------------------
+   2. Plateau en trois colonnes
+   --------------------------------------------------------------------- */
+.plateau {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 22px;
+}
+.plateau__gauche {
+  flex: 1 1 280px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.plateau__centre {
+  flex: 3 1 440px;
+  min-width: 0;
+}
+.plateau__droite {
+  flex: 2 1 320px;
+  min-width: 0;
+}
+
+.entete-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+
+
+/* ---------------------------------------------------------------------
+   3. Fiches suspects et jauges de stress
+   --------------------------------------------------------------------- */
+.grille-suspects {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.carte-suspect {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid var(--bord);
+  border-radius: var(--rayon);
+  background: var(--nuit-2);
+  color: var(--texte);
+  text-decoration: none;
+  overflow: hidden;
+}
+.carte-suspect:hover {
+  border-color: var(--bord-fort);
+  color: var(--texte);
+}
+.carte-suspect--active {
+  border-color: var(--ambre);
+  box-shadow: 0 0 22px rgba(242, 181, 68, 0.35);
+}
+/* Photo devant la toise : lignes horizontales tous les 14 px. */
+.carte-suspect__photo {
+  position: relative;
+  display: block;
+  aspect-ratio: 1 / 1;
+  background-color: #26324A;
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent 0,
+    transparent 13px,
+    rgba(232, 228, 218, 0.22) 13px,
+    rgba(232, 228, 218, 0.22) 14px
+  );
+}
+.carte-suspect__toise {
+  position: absolute;
+  left: 6px;
+  font-family: var(--police-machine);
+  font-size: 10px;
+  color: var(--texte-doux);
+}
+.carte-suspect__toise--haut { top: 4px; }
+.carte-suspect__toise--milieu { top: 50%; }
+.carte-suspect__chat {
+  position: absolute;
+  inset: 8% 6% 0 6%;
+}
+.carte-suspect__numero {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  padding: 1px 6px;
+  border: 1px solid var(--texte-doux);
+  background: var(--nuit);
+  font-family: var(--police-machine);
+  font-size: 11px;
+}
+.carte-suspect__texte {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 10px 10px;
+}
+.carte-suspect__nom {
+  font-family: var(--police-titre);
+  font-size: 21px;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+.carte-suspect__role {
+  font-size: 12px;
+  line-height: 1.25;
+  color: var(--texte-doux);
+}
+.carte-suspect__stress {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--texte-doux);
+}
+.carte-suspect__badge {
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 0 6px;
+  border: 1px solid var(--vert);
+  border-radius: 3px;
+  font-size: 11px;
+  color: var(--vert);
+}
+
+/* Barre de stress : la couleur dépend du niveau (classe stress--…). */
+.barre-stress {
+  flex: 1;
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--nuit-3);
+  overflow: hidden;
+}
+.barre-stress--grande {
+  height: 14px;
+  border-radius: 4px;
+}
+.barre-stress__niveau {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--vert);
+}
+.stress--mal_a_l_aise .barre-stress__niveau { background: var(--ambre); }
+.stress--nerveux .barre-stress__niveau { background: var(--rouge-vif); }
+
+
+/* ---------------------------------------------------------------------
+   4. Pièces à conviction (étiquettes kraft)
+   --------------------------------------------------------------------- */
+.pieces {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.piece {
+  position: relative;
+  padding: 12px 14px 12px 40px;
+  background: var(--kraft);
+  color: var(--encre);
+  border-radius: 4px 4px 4px 22px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.45);
+}
+.piece:nth-child(odd) { transform: rotate(-1.2deg); }
+.piece:nth-child(even) { transform: rotate(0.9deg); }
+.piece__oeillet {
+  position: absolute;
+  left: 12px;
+  top: 14px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--nuit);
+  box-shadow: inset 0 0 0 3px #B79E6B;
+}
+.piece__code {
+  margin: 0;
+  font-size: 12px;
+  color: #6E2A1E;
+}
+.piece__titre {
+  margin: 0;
+  color: var(--encre);
+  font-size: 22px;
+  letter-spacing: 0.06em;
+}
+.piece__texte {
+  margin: 2px 0 0;
+  font-size: 13px;
+}
+.piece__etiquette {
+  margin: 4px 0 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.btn--tirer {
+  width: 100%;
+  border: 1px dashed var(--ambre);
+  background: rgba(242, 181, 68, 0.08);
+  color: var(--ambre);
+}
+
+
+/* ---------------------------------------------------------------------
+   5. Salle d'interrogatoire et conversation
+   --------------------------------------------------------------------- */
+.interrogatoire {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--bord);
+  border-radius: var(--rayon-grand);
+  background: #101827;
+  box-shadow: var(--ombre);
+  overflow: hidden;
+}
+
+/* La salle : mur à lattes, sol, lampe et faisceau. */
+.salle {
+  position: relative;
+  min-height: 280px;
+  padding: 16px 18px;
+  background-color: #172235;
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent 0,
+    transparent 27px,
+    rgba(232, 228, 218, 0.08) 27px,
+    rgba(232, 228, 218, 0.08) 28px
+  );
+  overflow: hidden;
+}
+.salle__decor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.salle__lampe {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  margin-left: -40px;
+}
+.salle__faisceau {
+  position: absolute;
+  top: 44px;
+  bottom: 0;
+  left: 50%;
+  width: 420px;
+  margin-left: -210px;
+  background: #FFE3A0;
+  opacity: 0.2;
+  clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
+}
+.salle__sol {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 48px;
+  background: #0C121D;
+  border-top: 1px solid var(--bord);
+}
+.salle__horodatage {
+  position: relative;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  color: var(--texte-doux);
+}
+.salle__rec {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--rouge-vif);
+}
+.salle__point {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--rouge-vif);
+}
+.salle__suspect {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 8px auto 0;
+  width: 200px;
+}
+.salle__portrait {
+  width: 150px;
+  height: 150px;
+}
+.salle__nom {
+  margin: -4px 0 0;
+  padding: 2px 14px;
+  border: 1px solid var(--titre);
+  background: var(--nuit);
+  font-family: var(--police-machine);
+  font-size: 14px;
+  letter-spacing: 0;
+  text-align: center;
+}
+.salle__ia {
+  position: relative;
+  margin: 10px 0 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--texte-doux);
+  text-align: right;
+}
+
+/* Grande jauge : en haut à droite de la salle, sous la salle sur téléphone. */
+.jauge-stress {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--bord-fort);
+  border-radius: var(--rayon);
+  background: rgba(11, 17, 28, 0.88);
+}
+.jauge-stress__haut {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.jauge-stress__titre {
+  font-family: var(--police-titre);
+  font-size: 18px;
+  letter-spacing: 0.16em;
+}
+.jauge-stress__valeur {
+  font-size: 18px;
+}
+.jauge-stress__libelle {
+  font-size: 12px;
+  color: var(--texte-doux);
+}
+.stress--nerveux .jauge-stress__valeur { color: var(--rouge-vif); }
+.stress--mal_a_l_aise .jauge-stress__valeur { color: var(--ambre); }
+.stress--calme .jauge-stress__valeur { color: var(--vert); }
+
+/* Conversation */
+.conversation {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-height: 440px;
+  min-height: 200px;
+  overflow-y: auto;
+  padding: 22px 18px;
+}
+.bulle {
+  max-width: 85%;
+}
+.bulle p {
+  margin: 0;
+}
+.bulle__auteur {
+  font-family: var(--police-titre);
+  font-size: 16px;
+  letter-spacing: 0.14em;
+}
+.bulle--suspect {
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.bulle--suspect .bulle__auteur {
+  color: var(--ambre);
+}
+.bulle--suspect .bulle__texte {
+  padding: 12px 16px;
+  border-radius: 2px 14px 14px 14px;
+  background: var(--papier);
+  color: var(--encre);
+  font-family: var(--police-machine);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+}
+.bulle__infos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 12px;
+  color: var(--texte-doux);
+}
+.bulle__carnet {
+  color: var(--vert);
+}
+.bulle--joueur {
+  align-self: flex-end;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+.bulle__contenu {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+.bulle--joueur .bulle__auteur {
+  color: var(--texte-doux);
+}
+.bulle--joueur .bulle__texte {
+  padding: 10px 14px;
+  border: 1px solid var(--bord-fort);
+  border-radius: 14px 2px 14px 14px;
+  background: #24324B;
+}
+.bulle__avatar {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border: 2px solid var(--ambre);
+  border-radius: 50%;
+  background: var(--nuit-3);
+  overflow: hidden;
+}
+.conversation__vide {
+  margin: auto;
+  max-width: 360px;
+  padding: 20px;
+  border: 1px dashed var(--bord-fort);
+  border-radius: var(--rayon);
+  text-align: center;
+  color: var(--texte-doux);
+}
+.conversation__vide p {
+  margin: 0;
+}
+.conversation__vide-titre {
+  margin-bottom: 6px !important;
+  font-family: var(--police-titre);
+  font-size: 24px;
+  letter-spacing: 0.14em;
+  color: var(--titre);
+}
+
+/* Formulaire de question */
+.question {
+  padding: 14px 18px 16px;
+  border-top: 1px solid var(--bord);
+  background: #0D1422;
+}
+.question__ligne {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.question__ligne .champ {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+.question__aide {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--texte-doux);
+}
+
+
+/* ---------------------------------------------------------------------
+   6. Onglets, carnet d'indices, fiche de déduction
+   --------------------------------------------------------------------- */
+.onglets__liste {
+  display: flex;
+  gap: 6px;
+  padding-left: 14px;
+}
+.onglets__liste[hidden] {
+  display: none;
+}
+.onglets__onglet {
+  min-height: 44px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 8px 8px 0 0;
+  background: var(--nuit-3);
+  color: var(--texte-doux);
+  font-family: var(--police-titre);
+  font-size: 19px;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+}
+.onglets__onglet[aria-selected="true"] {
+  background: var(--papier);
+  color: var(--encre);
+}
+/* Quand le JavaScript a activé les onglets, le titre de chaque panneau
+   n'est plus utile à l'œil (l'onglet le montre) mais reste lu par les
+   lecteurs d'écran. */
+.onglets--actifs .onglets__titre {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.onglets__panneau + .onglets__panneau {
+  margin-top: 22px;
+}
+.onglets--actifs .onglets__panneau + .onglets__panneau {
+  margin-top: 0;
+}
+.onglets__panneau[hidden] {
+  display: none;
+}
+
+/* Carnet : papier ligné, marge rouge, spirale. */
+.carnet {
+  position: relative;
+  padding: 22px 16px 18px 46px;
+  border-radius: 4px 10px 10px 10px;
+  background-color: var(--papier);
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent 0,
+    transparent 29px,
+    rgba(70, 100, 140, 0.22) 29px,
+    rgba(70, 100, 140, 0.22) 30px
+  );
+  color: var(--encre);
+  box-shadow: var(--ombre);
+}
+.carnet::before { /* marge rouge */
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 32px;
+  width: 2px;
+  background: #C9625A;
+}
+.carnet::after { /* trous de la spirale */
+  content: "";
+  position: absolute;
+  top: 18px;
+  bottom: 18px;
+  left: 9px;
+  width: 13px;
+  background-image: radial-gradient(circle, var(--nuit) 6px, transparent 7px);
+  background-size: 13px 47px;
+  background-repeat: repeat-y;
+}
+.carnet .onglets__titre,
+.fiche .onglets__titre {
+  color: var(--encre);
+}
+.carnet__intro {
+  margin: 0 0 14px;
+}
+.carnet__entrees {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.entree {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 12px 12px;
+  border: 1px solid #B9AA8C;
+  border-left-width: 4px;
+  border-radius: 3px;
+  background: #FFFCF3;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+}
+.entree:nth-child(odd) { transform: rotate(-0.6deg); }
+.entree:nth-child(even) { transform: rotate(0.5deg); }
+.entree--preuve { background: #EEF6F1; border-left-color: var(--vert-encre); }
+.entree--avis-fiable { border-left-color: var(--vert-encre); }
+.entree--avis-douteux { border-left-color: #B07A12; }
+.entree--avis-faux { border-left-color: var(--rouge); }
+.entree p {
+  margin: 0;
+}
+.entree__scotch {
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  width: 64px;
+  height: 16px;
+  margin-left: -32px;
+  background: rgba(214, 196, 150, 0.85);
+  transform: rotate(-3deg);
+}
+.entree__haut {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.entree__type {
+  padding: 0 8px;
+  border: 2px solid currentColor;
+  font-family: var(--police-titre);
+  font-size: 15px;
+  letter-spacing: 0.12em;
+}
+.entree--preuve .entree__type {
+  color: var(--vert-encre);
+}
+.entree__source {
+  color: var(--encre-douce);
+}
+.entree__nouveau {
+  margin-left: auto;
+  font-size: 15px;
+}
+.entree__texte {
+  font-size: 14px;
+}
+.entree__liens {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--encre-douce);
+}
+.entree__vraie {
+  font-size: 13px;
+  color: var(--vert-encre);
+}
+.entree__note {
+  font-size: 22px;
+}
+
+/* Boutons d'avis : tampons en pointillés, pleins quand ils sont choisis. */
+.avis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.avis__bouton {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 2px dashed currentColor;
+  border-radius: 3px;
+  background: transparent;
+  font-family: var(--police-titre);
+  font-size: 18px;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+}
+.avis__bouton--fiable { color: var(--vert-encre); }
+.avis__bouton--douteux { color: #8A5A00; }
+.avis__bouton--faux { color: var(--rouge); }
+.avis__bouton[aria-pressed="true"] {
+  border-style: solid;
+  color: #FFFFFF;
+  transform: rotate(-3deg);
+}
+.avis__bouton--fiable[aria-pressed="true"] { background: var(--vert-encre); }
+.avis__bouton--douteux[aria-pressed="true"] { background: var(--ambre); color: var(--encre); }
+.avis__bouton--faux[aria-pressed="true"] { background: var(--rouge); }
+/* Inactif (démo) : on garde les couleurs pour montrer l'état, sans effet de clic. */
+.avis__bouton:disabled,
+.case:disabled {
+  cursor: default;
+}
+
+/* Fiche de déduction : presse-papier en bois et feuille. */
+.fiche {
+  padding: 26px 14px 14px;
+  border-radius: 4px 10px 10px 10px;
+  background: #3B2A1C;
+  box-shadow: var(--ombre);
+}
+.onglets--actifs .fiche {
+  border-radius: 4px 10px 10px 10px;
+}
+.fiche .onglets__titre {
+  color: var(--papier);
+}
+.fiche__papier {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 14px;
+  background: var(--papier);
+  color: var(--encre);
+}
+.fiche__papier .manuscrit {
+  margin: 0;
+}
+.fiche__groupe {
+  display: flex;
+  flex-direction: column;
+}
+.fiche__titre {
+  margin: 0 0 4px;
+  color: var(--encre);
+  font-size: 22px;
+  letter-spacing: 0.16em;
+}
+.case {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 4px;
+  border: none;
+  border-bottom: 1px dotted #A89878;
+  background: transparent;
+  color: var(--encre);
+  font-family: var(--police-machine);
+  font-size: 16px;
+  text-align: left;
+}
+.case__marque {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--encre);
+  background: #FFFFFF;
+  font-family: var(--police-texte);
+  font-weight: 800;
+  font-size: 17px;
+}
+.case__etat {
+  margin-left: auto;
+  font-family: var(--police-texte);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--encre-douce);
+}
+.case--barre .case__nom {
+  color: #6E6259;
+  text-decoration: line-through;
+  text-decoration-thickness: 3px;
+  text-decoration-color: var(--rouge);
+}
+.case--barre .case__marque { color: var(--rouge); }
+.case--valide .case__marque { color: var(--vert-encre); }
+
+
+/* ---------------------------------------------------------------------
+   Téléphone : jauge sous le suspect, colonnes empilées (flex-wrap).
+   --------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  .jauge-stress {
+    position: relative;
+    top: auto;
+    right: auto;
+    width: 100%;
+    margin-top: 12px;
+  }
+  .salle__faisceau {
+    width: 300px;
+    margin-left: -150px;
+  }
+  .bulle {
+    max-width: 95%;
+  }
+  .affaire__dossier {
+    transform: none;
+  }
+}
