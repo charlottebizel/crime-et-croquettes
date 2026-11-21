@@ -11,6 +11,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     # Comptes : /comptes/inscription/, /comptes/connexion/, /comptes/deconnexion/
     path("comptes/", include("comptes.urls")),
+    # Jeu : /parties/demo/ (et plus tard les vraies parties, spec §5.2)
+    path("parties/", include("jeu.urls")),
     # Pages publiques (accueil, et plus tard tarifs et page légale)
     path("", include("pages.urls")),
 ]

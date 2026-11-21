@@ -1,0 +1,38 @@
+{% comment %}
+  templates/jeu/_entree_carnet.html — Une entrée du carnet d'indices
+  ------------------------------------------------------------------
+  Contexte : entree (dict spec §6.4), mode_demo (booléen).
+
+  - Témoignage : rempli par l'IA à partir d'une réponse. Le joueur donne son
+    avis (Fiable / Douteux / Faux) et peut écrire une note.
+  - Preuve : vient d'une carte tirée, toujours vraie, pas d'avis.
+
+  Démo : les boutons d'avis sont inactifs. Quand la vue jeu:avis existera,
+  chacun deviendra un hx-post qui renvoie ce même fragment.
+{% endcomment %}
+<article id="entree-{{ entree.id }}" class="entree entree--{{ entree.type }}{% if entree.avis %} entree--avis-{{ entree.avis }}{% endif %}">
+  <span class="entree__scotch" aria-hidden="true"></span>
+
+  <div class="entree__haut">
+    <span class="entree__type">{% if entree.type == "preuve" %}Preuve{% else %}Témoignage{% endif %}</span>
+    <span class="entree__source machine">{{ entree.source }}</span>
+    {% if entree.est_nouvelle %}<span class="tampon entree__nouveau">Nouveau</span>{% endif %}
+  </div>
+
+  <p class="entree__texte machine">{{ entree.texte }}</p>
+  <p class="entree__liens">Lié à : {{ entree.liens }}</p>
+
+  {% if entree.type == "temoignage" %}
+    <div class="avis" role="group" aria-label="Votre avis sur ce témoignage">
+      <button type="button" class="avis__bouton avis__bouton--fiable" aria-pressed="{% if entree.avis == 'fiable' %}true{% else %}false{% endif %}" {% if mode_demo %}disabled title="Disponible quand le jeu sera branché"{% endif %}>Fiable</button>
+      <button type="button" class="avis__bouton avis__bouton--douteux" aria-pressed="{% if entree.avis == 'douteux' %}true{% else %}false{% endif %}" {% if mode_demo %}disabled title="Disponible quand le jeu sera branché"{% endif %}>Douteux</button>
+      <button type="button" class="avis__bouton avis__bouton--faux" aria-pressed="{% if entree.avis == 'faux' %}true{% else %}false{% endif %}" {% if mode_demo %}disabled title="Disponible quand le jeu sera branché"{% endif %}>Faux</button>
+    </div>
+    {% if entree.note %}
+      <p class="manuscrit entree__note">→ {{ entree.note }}</p>
+    {% endif %}
+    <p class="mention-ia">Résumé rédigé par IA à partir de la réponse du suspect.</p>
+  {% else %}
+    <p class="entree__vraie machine">Pièce à conviction : toujours vraie</p>
+  {% endif %}
+</article>

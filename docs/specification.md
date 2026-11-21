@@ -243,7 +243,7 @@ Les noms ci-dessous sont **le contrat**. Les types sont indicatifs (objets modè
 | `enquete` | `Enquete` (`.titre`, `.synopsis`) — **sans la solution** |
 | `suspects` | liste de dicts suspect (voir 6.2) |
 | `suspect_courant` | dict suspect sélectionné (défaut : le premier) |
-| `messages` | messages de `suspect_courant` dans cette partie, ordre chronologique (6.3) |
+| `echanges` | messages de `suspect_courant` dans cette partie, ordre chronologique (6.3). ⚠ Pas `messages` : ce nom est réservé aux notifications Django (`django.contrib.messages`), affichées par `base.html`. |
 | `cartes_tirees` | liste de `CartePreuve` tirées (`.code`, `.titre`, `.texte`, `.etiquette`) |
 | `entrees_carnet` | liste de dicts entrée (6.4), plus récente d'abord |
 | `fiche` | 3 groupes (6.5) |
