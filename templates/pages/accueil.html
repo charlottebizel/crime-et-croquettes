@@ -6,10 +6,13 @@
   Hérite de base.html : l'entête, le décor de nuit, le thème et le pied
   de page (mention IA + lien légal) sont donc déjà présents.
 
-  Cette version garde le contenu « en construction » de Charlotte.
+  Bouton « Lancer l'enquête de démo » : mène à l'écran de partie de
+  démonstration (jeu:partie_demo, ticket LB-001). Quand les vraies parties
+  existeront, on ajoutera à côté « Nouvelle enquête » (jeu:nouvelle).
+
   La vraie landing page (bénéfices, captures, paliers, appel à l'action)
   sera faite dans une feature dédiée (exigence O6).
-  {% endcomment %}
+{% endcomment %}
 
 {% block titre %}Crimes et Croquette · Le jeu d'enquête des chats{% endblock %}
 
@@ -24,7 +27,16 @@
   <div class="accueil__texte">
     <span class="tampon">En construction</span>
     <h1>Crimes et Croquette</h1>
-    <p class="machine">L'Inspecteur Moustache mène l'enquête. Le site est en construction.</p>
+    <p class="machine">L'Inspecteur Moustache mène l'enquête. Le site est en construction, mais une première affaire vous attend déjà.</p>
+
+    {# Appel à l'action : ouvre l'écran de jeu de démonstration (publique, sans connexion). #}
+    <div class="accueil__actions">
+      <a class="btn btn--ambre accueil__bouton" href="{% url 'jeu:partie_demo' %}">
+        <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5 L20 20"/></svg>
+        Lancer l'enquête de démo
+      </a>
+      <p class="accueil__precision">« Qui a volé le saumon du dimanche ? » · sans inscription</p>
+    </div>
   </div>
 
 </section>
@@ -59,6 +71,20 @@
   .accueil__texte p {
     font-size: 17px;
     color: var(--texte-doux);
+  }
+  .accueil__actions {
+    margin-top: 24px;
+  }
+  /* Bouton plus grand que la normale : c'est l'action principale de la page. */
+  .accueil__bouton {
+    min-height: 56px;
+    padding: 0 26px;
+    font-size: 26px;
+    box-shadow: 0 8px 24px rgba(242, 181, 68, 0.3);
+  }
+  .accueil__texte .accueil__precision {
+    margin: 10px 0 0;
+    font-size: 13px;
   }
 </style>
 {% endblock %}
