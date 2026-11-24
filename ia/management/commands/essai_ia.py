@@ -10,29 +10,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from ia.erreurs import ErreurIA
+from ia.schemas import SCHEMA_INTERROGATOIRE
 from ia.services import appeler
-
-SCHEMA_ESSAI = {
-    "type": "object",
-    "properties": {
-        "reponse": {"type": "string"},
-        "stress": {"type": "integer"},
-        "indices": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "texte": {"type": "string"},
-                    "liens": {"type": "array", "items": {"type": "object"}},
-                },
-                "required": ["texte", "liens"],
-                "additionalProperties": False,
-            },
-        },
-    },
-    "required": ["reponse", "stress", "indices"],
-    "additionalProperties": False,
-}
 
 
 class Command(BaseCommand):
@@ -55,7 +34,7 @@ class Command(BaseCommand):
                 modele=modele,
                 messages=messages,
                 nom_schema="interrogatoire",
-                schema=SCHEMA_ESSAI,
+                schema=SCHEMA_INTERROGATOIRE,
             )
         except ErreurIA as erreur:
             self.stderr.write(self.style.ERROR(f"Échec ({erreur.type_erreur}) : {erreur.detail}"))
