@@ -10,6 +10,7 @@ from decimal import Decimal
 from types import SimpleNamespace
 from unittest import mock
 
+import httpx
 import openai
 import pytest
 from django.core.exceptions import ImproperlyConfigured
@@ -145,9 +146,10 @@ def test_openrouter_envoie_les_bonnes_options(openrouter):
 
 
 def test_openrouter_transforme_les_erreurs_du_sdk(openrouter):
-    openrouter.client.chat.completions.create.side_effect = openai.APITimeoutError(
-        request=mock.Mock()
-    )
+    # Une vraie requête httpx (bibliothèque HTTP du SDK) : les versions
+    # récentes du SDK lisent ses en-têtes en construisant l'erreur.
+    requete = httpx.Request("POST", "https://openrouter.ai/api/v1/chat/completions")
+    openrouter.client.chat.completions.create.side_effect = openai.APITimeoutError(request=requete)
     with pytest.raises(ErreurFournisseur) as erreur:
         openrouter.completer("m", MESSAGES, "interrogatoire", {})
     assert "APITimeoutError" in erreur.value.detail
