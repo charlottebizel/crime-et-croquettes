@@ -1,0 +1,81 @@
+# CI/CD (spec §11) — à chaque PR et à chaque push sur main :
+#   1. qualité : Ruff (lint + format), check --deploy, pytest (faux fournisseur IA) ;
+#   2. sur main uniquement, si tout est vert : déploiement via le Deploy Hook Render.
+# Aucun appel IA réel ici (IA_FOURNISSEUR=faux) : la CI ne coûte rien.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Un nouveau push annule la CI encore en cours sur la même branche.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Qualité et tests
+    runs-on: ubuntu-latest
+    env:
+      # Valeurs factices : la CI n'a besoin d'aucun vrai secret.
+      SECRET_KEY: cle-factice-pour-la-ci-uniquement-0123456789-abcdefghijklmnopqrstuvwxyz
+      IA_FOURNISSEUR: faux
+      # Pas de DATABASE_URL : SQLite, jamais la base Neon de production.
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Installer les dépendances
+        run: pip install -r requirements.txt
+
+      - name: Ruff (lint)
+        run: ruff check .
+
+      - name: Ruff (format)
+        run: ruff format --check .
+
+      - name: Migrations à jour
+        env:
+          DEBUG: "True"
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Vérification de la configuration de production
+        env:
+          DEBUG: "False"
+          ALLOWED_HOSTS: crime-et-croquettes.onrender.com
+        run: python manage.py check --deploy
+
+      - name: Tests
+        env:
+          # DEBUG=True : sinon la redirection HTTPS de production renvoie
+          # toutes les requêtes du client de test vers https://.
+          DEBUG: "True"
+        run: pytest
+
+  deploiement:
+    name: Déploiement Render
+    needs: tests
+    # Seulement après un merge sur main (jamais pour une PR).
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Appeler le Deploy Hook de Render
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "::warning::Secret RENDER_DEPLOY_HOOK absent : déploiement ignoré."
+            exit 0
+          fi
+          curl --fail --silent --show-error -X POST "$RENDER_DEPLOY_HOOK" > /dev/null
+          echo "Déploiement demandé à Render."

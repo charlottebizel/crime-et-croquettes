@@ -145,9 +145,10 @@ def test_openrouter_envoie_les_bonnes_options(openrouter):
 
 
 def test_openrouter_transforme_les_erreurs_du_sdk(openrouter):
-    openrouter.client.chat.completions.create.side_effect = openai.APITimeoutError(
-        request=mock.Mock()
-    )
+    # Fausse requête AVEC des en-têtes : selon la version du SDK, l'erreur
+    # lit request.headers en se construisant (un simple Mock ne suffit pas).
+    requete = mock.Mock(headers={}, method="POST", url="https://openrouter.ai/api/v1")
+    openrouter.client.chat.completions.create.side_effect = openai.APITimeoutError(request=requete)
     with pytest.raises(ErreurFournisseur) as erreur:
         openrouter.completer("m", MESSAGES, "interrogatoire", {})
     assert "APITimeoutError" in erreur.value.detail
