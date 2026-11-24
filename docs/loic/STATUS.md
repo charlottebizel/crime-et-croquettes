@@ -12,5 +12,5 @@ Gabarit de base et comptes mergés sur `main`, kit agents en place. L'écran de 
 
 ## Prochaine action
 
-1. Sur `feature/ecran-partie`, appliquer les 16 fichiers de code livrés le 2026-11-18, lancer `pytest` et ouvrir `/parties/demo/`.
+1. Sur `feature/ecran-partie`, appliquer les 15 fichiers de code livrés le 2026-11-18, lancer `pytest` et ouvrir `/parties/demo/`.
 2. Faire les captures (écran complet, vue téléphone, onglet fiche), puis ouvrir la PR avec Charlotte en reviewer en signalant : fichiers `jeu/` et `config/urls.py` touchés, `messages` renommé `echanges` dans la spec.
