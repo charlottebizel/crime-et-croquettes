@@ -134,7 +134,7 @@ Rôle administrateur = `user.is_staff`.
 - `texte` TextField (≤ 200 caractères)
 - `liens_suspects` M2M Suspect, `liens_objets` M2M Objet, `liens_lieux` M2M Lieu (`blank=True`)
 
-**AvisCarnet** : `entree` FK, `joueur` FK User, `avis` (`fiable|douteux|faux`, null), `note` CharField(200, blank) — `unique_together (entree, joueur)`.
+**AvisCarnet** : `entree` FK, `joueur` FK User, `avis` (`fiable|douteux|faux`, `""` = pas d'avis), `note` CharField(200, blank) — `unique_together (entree, joueur)`.
 
 **CaseFiche**
 - `partie` FK, `joueur` FK User
@@ -154,7 +154,7 @@ Rôle administrateur = `user.is_staff`.
 - `cout_usd` DecimalField(10,6) — lu dans `usage` de la réponse OpenRouter
 - `duree_ms` PositiveIntegerField
 - `succes` BooleanField
-- `erreur_type` (`delai|panne|credit|invalide`, null)
+- `erreur_type` (`delai|panne|credit|invalide`, `""` = pas d'erreur — convention Django : pas de NULL sur un texte)
 - `erreur_detail` TextField (blank) — **jamais affiché à l'utilisateur**
 
 **ModeErreurIA** (singleton, O5) : `mode` (`normal|delai|panne|credit|invalide`). Modifiable uniquement par un admin. Quand il n'est pas `normal`, `ia/services.py` simule l'erreur correspondante **sans appeler le vrai modèle**.
