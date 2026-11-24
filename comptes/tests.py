@@ -95,3 +95,50 @@ class ConnexionTests(TestCase):
         # Un simple lien ne doit pas pouvoir déconnecter quelqu'un.
         reponse = self.client.get(reverse("comptes:deconnexion"))
         self.assertEqual(reponse.status_code, 405)
+
+
+class ProfilEtPalierTests(TestCase):
+    """Profil créé automatiquement (signal) et paliers créés par la migration."""
+
+    def test_paliers_free_et_pro_existent(self):
+        from .models import Palier
+
+        noms = set(Palier.objects.values_list("nom", flat=True))
+        self.assertEqual(noms, {"Free", "Pro"})
+        free = Palier.objects.get(nom="Free")
+        self.assertEqual(free.prix_mensuel_eur, 0)
+        self.assertEqual(free.parties_par_mois, 3)
+        self.assertEqual(free.questions_par_partie, 20)
+
+    def test_nouvel_utilisateur_recoit_un_profil_free(self):
+        utilisateur = User.objects.create_user("pistache", "p@example.com", "x")
+        self.assertEqual(utilisateur.profil.palier.nom, "Free")
+        self.assertEqual(utilisateur.profil.pseudo, "pistache")
+
+    def test_inscription_cree_aussi_le_profil(self):
+        self.client.post(
+            reverse("comptes:inscription"),
+            {
+                "username": "mistigri",
+                "email": "mistigri@example.com",
+                "password1": "Croquette-Secrete-42",
+                "password2": "Croquette-Secrete-42",
+            },
+        )
+        self.assertEqual(User.objects.get(username="mistigri").profil.palier.nom, "Free")
+
+    def test_palier_utilise_ne_peut_pas_etre_supprime(self):
+        from django.db.models import ProtectedError
+
+        from .models import Palier
+
+        User.objects.create_user("felix", "f@example.com", "x")
+        with self.assertRaises(ProtectedError):
+            Palier.objects.get(nom="Free").delete()
+
+    def test_supprimer_l_utilisateur_supprime_son_profil(self):
+        from .models import Profil
+
+        utilisateur = User.objects.create_user("duchesse", "d@example.com", "x")
+        utilisateur.delete()
+        self.assertFalse(Profil.objects.filter(pseudo="duchesse").exists())
