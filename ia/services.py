@@ -12,9 +12,14 @@ import json
 import time
 from collections.abc import Callable
 
+from django.conf import settings
+
 from .erreurs import ErreurIA, ReponseInvalide
 from .fournisseurs import obtenir_fournisseur
 from .models import AppelIA
+from .prompts import messages_interrogatoire
+from .schemas import SCHEMA_INTERROGATOIRE
+from .validation import valider_interrogatoire
 
 
 def appeler(
@@ -65,3 +70,24 @@ def appeler(
         # Exécuté dans tous les cas : l'appel est toujours journalisé.
         journal.duree_ms = int((time.monotonic() - debut) * 1000)
         journal.save()
+
+
+def interroger(
+    *, partie, suspect, question: str, stress: int, utilisateur=None, fournisseur=None
+) -> tuple[dict, AppelIA]:
+    """Interrogatoire v1 (spec §7.2) : prompt → appel → validation → journal.
+
+    Renvoie la réponse validée ({"reponse", "stress", "indices"}) et l'AppelIA.
+    N'enregistre rien dans la partie : c'est le rôle de jeu/services.py.
+    """
+    return appeler(
+        type_appel=AppelIA.Type.INTERROGATOIRE,
+        modele=settings.IA_MODELE_INTERROGATOIRE,
+        messages=messages_interrogatoire(partie, suspect, question, stress),
+        nom_schema="interrogatoire",
+        schema=SCHEMA_INTERROGATOIRE,
+        valider=lambda donnees: valider_interrogatoire(donnees, partie.enquete, stress),
+        utilisateur=utilisateur,
+        partie=partie,
+        fournisseur=fournisseur,
+    )
