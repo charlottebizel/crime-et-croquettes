@@ -3,7 +3,7 @@ id: LB-006
 titre: Icône « œil » pour afficher ou masquer le mot de passe
 statut: en review
 membre: Loïc
-branche: feature/oeil-mot-de-passe
+branche: revue-02/oeil-mot-de-passe
 créé: 2026-11-25
 ---
 ## Objectif
