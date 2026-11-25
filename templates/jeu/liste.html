@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% comment %}
+  =====================================================================
+  templates/jeu/liste.html — « Mes parties » (ticket LB-004)
+  =====================================================================
+  Vue : jeu.views.liste   ·   URL : jeu:liste   ·   connexion obligatoire
+  Contexte : participations (Participation, avec partie et enquête)
+
+  Page Django simple (pas de Vue) : une liste de dossiers, chacun avec un
+  lien vers l'écran de jeu de la partie (jeu:partie). La progression est
+  en base : une partie se reprend exactement là où on l'a laissée.
+{% endcomment %}
+
+{% block titre %}Mes parties · Crimes et Croquette{% endblock %}
+
+{% block contenu %}
+<section class="mes-parties">
+  <h1 class="titre-section"><span class="titre-section__num">01</span>Mes enquêtes</h1>
+
+  {% if participations %}
+    <ul class="dossiers">
+      {% for participation in participations %}
+        {% with partie=participation.partie %}
+          <li class="dossier-partie dossier-partie--{{ partie.statut }}">
+            <div class="dossier-partie__haut">
+              <span class="machine dossier-partie__code">Affaire · code {{ partie.code_invitation }}</span>
+              <span class="dossier-partie__statut">{{ partie.get_statut_display }}</span>
+            </div>
+            <h2 class="dossier-partie__titre">{{ partie.enquete.titre }}</h2>
+            <p class="dossier-partie__infos">
+              {% if participation.role == "hote" %}Vous menez l'enquête{% else %}Invité par {{ partie.hote.username }}{% endif %}
+              · {{ partie.questions_posees }} question{{ partie.questions_posees|pluralize }} posée{{ partie.questions_posees|pluralize }}
+              · ouverte le {{ partie.cree_le|date:"j F Y" }}
+            </p>
+            <a class="btn btn--ambre" href="{% url 'jeu:partie' partie.pk %}">
+              {% if partie.statut == "en_cours" %}Reprendre l'enquête{% else %}Revoir le dossier{% endif %}
+            </a>
+          </li>
+        {% endwith %}
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="dossiers-vide">
+      <p class="machine">Aucun dossier pour l'instant, agent.</p>
+      <p>La création d'enquêtes arrive bientôt. En attendant, essayez l'enquête de démonstration.</p>
+      <a class="btn btn--ambre" href="{% url 'jeu:partie_demo' %}">Lancer l'enquête de démo</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block head_extra %}
+{# Styles de cette page. Couleurs = variables de theme.css. #}
+<style>
+  .mes-parties {
+    max-width: 860px;
+  }
+  .dossiers {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 18px;
+  }
+  /* Chaque partie est une chemise cartonnée, comme le dossier de l'écran de jeu. */
+  .dossier-partie {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 18px 20px;
+    background: var(--dossier);
+    color: var(--encre);
+    border-radius: 4px 12px 12px 12px;
+    box-shadow: var(--ombre);
+  }
+  .dossier-partie__haut {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    font-size: 13px;
+  }
+  .dossier-partie__statut {
+    font-family: var(--police-titre);
+    font-size: 16px;
+    letter-spacing: 0.12em;
+    padding: 0 8px;
+    border: 2px solid var(--vert-encre);
+    color: var(--vert-encre);
+  }
+  .dossier-partie--perdue .dossier-partie__statut {
+    border-color: var(--rouge);
+    color: var(--rouge);
+  }
+  .dossier-partie__titre {
+    margin: 0;
+    color: var(--encre);
+    font-size: clamp(22px, 3vw, 28px);
+    letter-spacing: 0.06em;
+  }
+  .dossier-partie__infos {
+    margin: 0 0 6px;
+    font-size: 14px;
+    color: var(--encre-douce);
+  }
+  .dossiers-vide {
+    padding: 24px;
+    border: 1px dashed var(--bord-fort);
+    border-radius: var(--rayon);
+    color: var(--texte-doux);
+  }
+  .dossiers-vide p {
+    margin: 0 0 10px;
+  }
+</style>
+{% endblock %}

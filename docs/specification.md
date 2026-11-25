@@ -200,10 +200,10 @@ Rôle administrateur = `user.is_staff`.
 | Méthode | URL | name | Réponse |
 |---|---|---|---|
 | GET | `/parties/demo/` | `jeu:partie_demo` | Coquille `jeu/partie.html`, API `/api/parties/demo/`, mode démo. **Publique.** |
-| GET | `/parties/` | `jeu:liste` | `jeu/liste.html` (ou écran Vue, à décider) |
+| GET | `/parties/` | `jeu:liste` | `jeu/liste.html` : les parties du joueur, lien « Reprendre l'enquête » ✅ |
 | GET/POST | `/parties/nouvelle/` | `jeu:nouvelle` | `jeu/nouvelle.html` ; POST → redirection vers la partie |
 | POST | `/parties/rejoindre/` | `jeu:rejoindre` | champ `code` → redirection |
-| GET | `/parties/<int:pk>/` | `jeu:partie` | Coquille `jeu/partie.html` avec `url_api` = `/api/parties/<pk>/`, `mode_demo` = False (paramètre optionnel `?suspect=<id>`, lu par Vue) |
+| GET | `/parties/<int:pk>/` | `jeu:partie` | Coquille `jeu/partie.html` avec `url_api` = `/api/parties/<pk>/`, `mode_demo` = False (paramètre optionnel `?suspect=<id>`, lu par Vue). Crée la fiche du joueur si elle manque (`jeu.services.assurer_fiche`) ✅ |
 
 Contexte de la coquille `jeu/partie.html` : `titre_page`, `url_api`, `mode_demo`. La vue est décorée par `@ensure_csrf_cookie` (Vue renvoie ce cookie dans `X-CSRFToken`).
 
@@ -211,11 +211,13 @@ Contexte de la coquille `jeu/partie.html` : `titre_page`, `url_api`, `mode_demo`
 
 | Méthode | URL | name | Template |
 |---|---|---|---|
-| GET | `/gestion/couts/` | `gestion:couts` | `gestion/couts.html` |
+| GET | `/gestion/couts/` | `gestion:couts` | `gestion/couts.html`, coquille de l'application Vue `static/js/gestion/` ✅ |
+| GET | `/api/gestion/couts/?jours=7\|30\|90` | `api_gestion:couts` | JSON du §6.7 ✅ (non connecté → 401, joueur → 403, au format d'erreur du §5.4) |
 | GET/POST | `/gestion/utilisateurs/` | `gestion:utilisateurs` | `gestion/utilisateurs.html` (changer le palier) |
 | GET/POST | `/gestion/erreurs-ia/` | `gestion:erreurs_ia` | `gestion/erreurs_ia.html` (choisir le `ModeErreurIA`) |
 
 L'admin Django (`/admin/`) reste disponible en secours mais les trois pages ci-dessus sont celles montrées en démo.
+Accès aux pages `/gestion/…` : visiteur → redirection vers la connexion ; joueur connecté non administrateur → 403. Le lien « Coûts IA » du menu n'est affiché qu'aux administrateurs.
 
 ### 5.4 API JSON du jeu (lue par l'application Vue)
 
@@ -224,8 +226,8 @@ Toutes les adresses se construisent à partir de **l'adresse de la partie** `P` 
 
 | Méthode | Adresse | Corps envoyé | Réponse 200 | État |
 |---|---|---|---|---|
-| GET | `P` | — | état de la partie : clés du §6.1 **sauf** `suspect_courant` et `echanges`, plus `mode_demo` | démo ✅, réel à faire |
-| GET | `P` `suspects/<sid>/` | — | `{"suspect": §6.2, "echanges": [§6.3…]}` | démo ✅, réel à faire |
+| GET | `P` | — | état de la partie : clés du §6.1 **sauf** `suspect_courant` et `echanges`, plus `mode_demo` | démo ✅, réel ✅ (`jeu/lecture.py`) |
+| GET | `P` `suspects/<sid>/` | — | `{"suspect": §6.2, "echanges": [§6.3…]}` | démo ✅, réel ✅ |
 | POST | `P` `suspects/<sid>/question/` | `{"question": "…"}` (1 à 300 caractères) | `{"echange": [question §6.3, réponse §6.3], "suspect": §6.2 à jour, "nouvelles_entrees": [§6.4…], "compteurs": §6.6}` | à faire (appelle `jeu.services.interroger_suspect`) |
 | POST | `P` `cartes/tirer/` | `{}` | `{"carte": {code, titre, texte, etiquette}, "entree": §6.4, "compteurs": §6.6}` | à faire |
 | POST | `P` `carnet/<eid>/avis/` | `{"avis": "fiable"\|"douteux"\|"faux"\|"", "note"?: "…"}` | `{"entree": §6.4 à jour}` | à faire |
@@ -296,7 +298,7 @@ Les noms ci-dessous sont **le contrat**. Pour les écrans de jeu (Vue), ce sont 
   "id": 31, "type": "temoignage",            # ou "preuve"
   "source": "Déposition de Gros Minou",      # ou "Pièce n° A2"
   "texte": "...", "liens": "Pistache · Cuisine · Pelote de laine",
-  "est_nouvelle": True,                      # créée depuis la dernière visite du joueur
+  "est_nouvelle": True,                      # témoignage que ce joueur n'a pas encore jugé (pas d'avis)
   "avis": "douteux",                         # avis du joueur connecté, None sinon
   "note": "Il sent le saumon…",
 }
@@ -319,14 +321,18 @@ Les noms ci-dessous sont **le contrat**. Pour les écrans de jeu (Vue), ce sont 
   "cartes_tirees": 2, "cartes_max": 6, "peut_poser_question": True, "peut_tirer_carte": True }
 ```
 
-### 6.7 `gestion/couts.html`
+### 6.7 Tableau de bord des coûts (API `/api/gestion/couts/`)
 
-| Variable | Contenu |
+Calculé par `gestion/statistiques.py` à partir du journal `ia.AppelIA`. Montants en **dollars** dans le JSON (monnaie de facturation d'OpenRouter, nombres arrondis au millionième) ; l'écran les affiche en **euros** avec le taux de la clé `devise`.
+
+| Clé | Contenu |
 |---|---|
-| `par_jour` | liste `{date, nb_appels, nb_echecs, jetons_entree, jetons_sortie, cout_usd}` (30 derniers jours) |
-| `par_utilisateur` | liste `{pseudo, palier, nb_appels, cout_usd, parties_ce_mois}` |
-| `totaux` | `{nb_appels, cout_usd, cout_moyen_generation, cout_moyen_question, taux_echec}` |
-| `derniers_appels` | 20 derniers `AppelIA` |
+| `periode` | `{jours, debut, fin}` (dates ISO, aujourd'hui compris) ; `periodes_possibles` : `[7, 30, 90]` |
+| `devise` | `{usd_pour_1_eur, date_taux, source, budget_eur}` : taux 1 € = x $ ; `source` = `"bce"` (taux du jour de la BCE, API Frankfurter, `gestion/taux.py`, cache 6 h) ou `"secours"` (API muette : `TAUX_USD_POUR_1_EUR` et `TAUX_DATE`) ; `budget_eur` = `BUDGET_IA_EUR` |
+| `par_jour` | liste `{date, nb_appels, nb_echecs, jetons_entree, jetons_sortie, cout_usd}`, **un jour par ligne, jours sans appel inclus (à zéro)** |
+| `par_utilisateur` | liste `{pseudo, palier, nb_appels, cout_usd, parties_ce_mois}`, du plus coûteux au moins coûteux ; compte supprimé → `pseudo` = « Compte supprimé » |
+| `totaux` | `{nb_appels, nb_echecs, taux_echec, cout_usd, jetons_entree, jetons_sortie, duree_moyenne_ms, cout_moyen_generation, cout_moyen_question, cout_depuis_le_debut}` ; les moyennes ne comptent que les appels **réussis** |
+| `derniers_appels` | 20 derniers appels `{id, date, pseudo, type, modele, jetons_entree, jetons_sortie, cout_usd, duree_ms, succes, erreur}` — **jamais** `erreur_detail` (réservé à l'admin Django) |
 
 `cout_moyen_generation` et `cout_moyen_question` servent au calcul du pricing (§10).
 
@@ -454,11 +460,13 @@ Utilisé quand `IA_FOURNISSEUR=faux` (local par défaut, CI, tests). Renvoie des
 
 ## 9. Données de démonstration
 
-Commande `python manage.py charger_demo` (idempotente) :
-- paliers `Free` et `Pro` ;
-- utilisateurs `admin` (staff), `moustache` (Pro), `joueur` (Free) — mots de passe dans le README, à changer en prod ;
+Commande `python manage.py charger_demo` (idempotente, `jeu/management/commands/charger_demo.py`) ✅ :
+- paliers `Free` et `Pro` (déjà créés par la migration `comptes.0002`) ;
+- utilisateurs `admin` (superutilisateur), `moustache` (Pro, hôte de la partie), `joueur` (Free, invité) — mot de passe lu dans la variable `DEMO_MOT_DE_PASSE`, sinon tiré au hasard et affiché une seule fois ; un compte existant n'est jamais modifié ;
 - l'enquête **« Qui a volé le saumon du dimanche ? »** sans appel IA : suspects Duchesse (persane snob, couronne), Gros Minou (roux gourmand, serviette — coupable), Pistache (chaton turbulent, pelote), Monsieur Félix (vieux matou, monocle), Mistigri (chatte de gouttière, bandana) ; objets pelote de laine, griffoir, boîte en carton, plumeau, souris en peluche ; lieux cuisine, salon, panier, rebord de fenêtre, jardin ; 6 cartes ;
-- une partie en cours avec quelques messages et entrées de carnet, pour que l'écran de jeu soit montrable tout de suite.
+- solution : Gros Minou, la boîte en carton, la cuisine ; chaque élément est prouvé par au moins une carte (§7.3) ;
+- une partie en cours (code `SAUMON42`) : interrogatoires de Duchesse, Gros Minou et Monsieur Félix, cartes A1 et A2 tirées, 5 entrées de carnet, avis et fiche de `moustache` déjà commencés, fiche vierge pour `joueur` ;
+- `--reinitialiser` supprime l'enquête de démo (et sa partie) avant de la recréer.
 
 ---
 

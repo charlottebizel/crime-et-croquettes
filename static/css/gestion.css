@@ -1,0 +1,240 @@
+/* =====================================================================
+   static/css/gestion.css — Tableau de bord des coûts (ticket LB-005)
+   =====================================================================
+   Chargé par templates/gestion/couts.html (avec partie.css, pour les
+   états de chargement et d'erreur communs). Couleurs : variables de
+   theme.css. La couleur des barres (#C98A2A) a été vérifiée avec le
+   validateur de palette (luminosité et contraste sur --nuit-2).
+   ===================================================================== */
+
+.couts {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* --- Entête et filtre de période --- */
+.couts__entete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+.couts__entete h1 {
+  margin-bottom: 4px;
+}
+.couts__intro {
+  margin: 0;
+  max-width: 70ch;
+  color: var(--texte-doux);
+}
+.periode {
+  display: inline-flex;
+  border: 1px solid var(--bord-fort);
+  border-radius: var(--rayon);
+  overflow: hidden;
+}
+.periode__bouton {
+  min-height: 40px;
+  padding: 0 14px;
+  border: none;
+  border-right: 1px solid var(--bord-fort);
+  background: var(--nuit-2);
+  color: var(--texte-doux);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.periode__bouton:last-child {
+  border-right: none;
+}
+.periode__bouton[aria-pressed="true"] {
+  background: var(--ambre);
+  color: var(--nuit);
+  font-weight: 700;
+}
+
+/* --- Tuiles --- */
+.tuiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+}
+.tuile {
+  padding: 14px 16px;
+  border: 1px solid var(--bord);
+  border-radius: var(--rayon-grand);
+  background: var(--nuit-2);
+}
+.tuile p {
+  margin: 0;
+}
+.tuile__libelle {
+  font-size: 13px;
+  color: var(--texte-doux);
+}
+.tuile__valeur {
+  margin: 4px 0 !important;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--titre);
+  font-variant-numeric: tabular-nums;
+}
+.tuile__detail {
+  font-size: 12px;
+  color: var(--texte-doux);
+}
+.tuile--budget {
+  border-color: var(--ambre);
+}
+/* Jauge du budget consommé (passe au rouge à partir de 80 %) */
+.budget {
+  height: 6px;
+  margin-top: 10px;
+  border-radius: 3px;
+  background: var(--bord);
+  overflow: hidden;
+}
+.budget__niveau {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--ambre);
+}
+.budget__niveau--alerte {
+  background: var(--rouge-vif);
+}
+
+/* --- Cartes (graphique, tableaux) --- */
+.carte-couts {
+  padding: 18px;
+  border: 1px solid var(--bord);
+  border-radius: var(--rayon-grand);
+  background: var(--nuit-2);
+}
+.carte-couts__titre {
+  margin: 0 0 2px;
+  font-size: 22px;
+}
+.carte-couts__sous-titre,
+.carte-couts__vide {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--texte-doux);
+}
+.carte-couts__table {
+  margin-top: 10px;
+}
+.carte-couts__table summary {
+  cursor: pointer;
+  color: var(--ambre);
+  font-size: 14px;
+  padding: 6px 0;
+}
+
+/* --- Graphique --- */
+.graphique {
+  position: relative;
+}
+.graphique__svg {
+  display: block;
+  overflow: visible;
+}
+.graphique__grille {
+  stroke: var(--bord);
+  stroke-width: 1;
+}
+.graphique__texte {
+  fill: var(--texte-doux);
+  font-family: var(--police-texte);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.graphique__cible {
+  fill: transparent;
+}
+.graphique__barre {
+  fill: #C98A2A;
+}
+.graphique__colonne {
+  cursor: default;
+  outline: none;
+}
+.graphique__colonne--active .graphique__cible {
+  fill: rgba(242, 181, 68, 0.08);
+}
+.graphique__colonne--active .graphique__barre {
+  fill: var(--ambre);
+}
+.graphique__colonne:focus-visible .graphique__cible {
+  stroke: var(--ambre);
+  stroke-width: 2;
+}
+.graphique__bulle {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid var(--bord-fort);
+  border-radius: var(--rayon);
+  background: var(--nuit);
+  font-size: 13px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+}
+.graphique__vide {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--texte-doux);
+}
+
+/* --- Tableaux --- */
+.table-defilante {
+  overflow-x: auto; /* les tableaux larges défilent dans leur boîte, pas la page */
+}
+.carte-couts table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.carte-couts th,
+.carte-couts td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--bord);
+  text-align: left;
+  white-space: nowrap;
+}
+.carte-couts thead th {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texte-doux);
+}
+.carte-couts tbody th {
+  font-weight: 600;
+}
+.resultat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.resultat--ok {
+  color: var(--vert);
+}
+.resultat--echec {
+  color: var(--rouge-vif);
+}
+
+@media (max-width: 640px) {
+  .tuile__valeur {
+    font-size: 24px;
+  }
+  .graphique__bulle {
+    font-size: 12px;
+  }
+}

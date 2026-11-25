@@ -182,6 +182,25 @@ CONVERSATIONS = {
             "auteur": None,
         },
     ],
+    4: [
+        {
+            "est_suspect": False,
+            "texte": "Où étiez-vous pendant la sieste de midi ?",
+            "stress_avant": None,
+            "stress_apres": None,
+            "a_ajoute_au_carnet": False,
+            "auteur": "Inspecteur Moustache",
+        },
+        {
+            "est_suspect": True,
+            "texte": "Sur le rebord de la fenêtre, avec Mistigri. Nous observions les "
+            "mésanges. Je n'ai pas bougé une moustache, inspecteur.",
+            "stress_avant": 10,
+            "stress_apres": 12,
+            "a_ajoute_au_carnet": True,
+            "auteur": None,
+        },
+    ],
 }
 
 # --- Pièces à conviction déjà tirées (spec §6.1, CartePreuve) --------------
