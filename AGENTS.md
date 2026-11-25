@@ -67,7 +67,7 @@ Les skills du groupe vivent dans `.agents/skills/`. Claude Code les lit dans `.c
 **Loïc** (ces règles priment sur les règles générales quand elles sont plus strictes)
 1. Pas de fichier zip : chaque fichier de code est livré un par un.
 2. Pour chaque fichier livré : indiquer le dossier de destination et s'il est NOUVEAU ou À REMPLACER.
-3. Pas d'injection directe de code par l'agent : il n'écrit aucun fichier de code dans le projet et n'ajoute pas de code non demandé. Loïc relit et applique lui-même chaque fichier de code. **Exception : les fichiers `.md`** (AGENTS.md, STATUS.md, tickets, journal, décisions, README…) que l'agent peut modifier directement ; il dit lesquels il a modifiés.
+3. Depuis le 2026-11-25 (demande du professeur : apprendre à travailler avec un agent), l'agent **écrit directement** le code et les `.md` dans le projet, sans ajouter ce qui n'est pas demandé. En échange, il **explique chaque fichier** créé ou modifié (ce qu'il fait et pourquoi), teste avant d'écrire, et liste ce qu'il a vérifié et ce qu'il n'a pas vérifié. Il ne commite pas et ne pousse pas : Loïc relit et lance git lui-même.
 4. Une nouvelle branche GitHub pour chaque feature (nom de branche proposé à chaque fois).
 5. Code commenté et expliqué.
 6. Signaler à chaque fois qu'une capture d'écran est à faire pour le rapport (quoi capturer et pourquoi).
@@ -81,6 +81,7 @@ Les skills du groupe vivent dans `.agents/skills/`. Claude Code les lit dans `.c
 | --- | --- |
 | activer l'environnement | `.venv\Scripts\Activate.ps1` (Windows) · `source .venv/bin/activate` (macOS/Linux) |
 | installer / mettre à jour | `pip install -r requirements.txt` puis `python manage.py migrate` |
+| charger les données de démo | `python manage.py charger_demo` (mot de passe des comptes : variable `DEMO_MOT_DE_PASSE`, sinon tiré au hasard et affiché) ; `--reinitialiser` pour repartir de zéro |
 | lancer l'application | `python manage.py runserver` → http://127.0.0.1:8000/ |
 | lint et format | `ruff check .` et `ruff format --check .` |
 | types ou analyse statique | `python manage.py check` (pas de vérificateur de types pour l'instant) |

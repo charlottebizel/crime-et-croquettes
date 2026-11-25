@@ -62,6 +62,7 @@ static/
 ├── css/
 │   ├── theme.css             Variables de couleurs, polices et composants
 │   └── partie.css            Écran de partie
+├── js/gestion/               Application Vue du tableau de bord des coûts (admin)
 ├── js/jeu/                   Application Vue des écrans de jeu
 │   ├── main.js               Point d'entrée (monte l'application sur #app-partie)
 │   ├── api.js                lireJSON / envoyerJSON (CSRF, erreurs lisibles)
@@ -176,6 +177,33 @@ python manage.py test comptes      # ou : pytest
 
 Les tests utilisent le stockage de fichiers statiques simple de Django (`override_settings`), car le stockage WhiteNoise de production exige `collectstatic`.
 
+## Données de démonstration
+
+```bash
+python manage.py charger_demo                  # crée ce qui manque (sans danger si relancé)
+python manage.py charger_demo --reinitialiser  # efface l'enquête de démo puis la recrée
+```
+
+Crée trois comptes (`admin`, `moustache` en Pro, `joueur` en Free), l'enquête « Qui a volé le saumon du dimanche ? » en base et une partie en cours (code `SAUMON42`). Le mot de passe des comptes est lu dans la variable d'environnement `DEMO_MOT_DE_PASSE` (à mettre dans `.env`) ; sans elle, il est tiré au hasard et affiché une seule fois. Aucun appel à l'IA.
+
+Connectez-vous en `moustache`, puis **Mes parties** → **Reprendre l'enquête** : c'est l'écran de jeu Vue, branché sur la base de données.
+
+## Mes parties et vraies parties
+
+- `/parties/` (`jeu:liste`) : les enquêtes du joueur connecté.
+- `/parties/<pk>/` (`jeu:partie`) : la même application Vue que la démo, avec l'API `/api/parties/<pk>/` (lecture : `jeu/lecture.py`).
+- Accès : connexion obligatoire, et seulement les parties où l'on joue (sinon 404, la partie « n'existe pas » pour les autres).
+- Les écritures (question, carte, avis, fiche, accusation) arrivent ensuite (spec §5.4).
+
+## Tableau de bord des coûts (administrateurs)
+
+- `/gestion/couts/` (`gestion:couts`), lien **Coûts IA** dans le menu des administrateurs.
+- Chiffres calculés par `gestion/statistiques.py` à partir du journal `ia.AppelIA` ; API `/api/gestion/couts/?jours=7|30|90`.
+- Écran Vue (`static/js/gestion/`) : tuiles (coût, appels et échecs, coût moyen d'une question et d'une génération, budget consommé depuis le début), histogramme du coût par jour (survol ou clavier, tableau jour par jour), consommation par joueur, 20 derniers appels.
+- **Montants en euros.** OpenRouter facture en dollars : le journal garde le coût exact en dollars et l'écran convertit avec le taux du jour de la BCE, demandé à l'API gratuite [Frankfurter](https://frankfurter.dev) (`gestion/taux.py`, sans clé, mis en cache 6 h). Si l'API ne répond pas, le taux de secours `TAUX_USD_POUR_1_EUR` du `.env` est utilisé et l'écran l'indique. `TAUX_CHANGE_URL` vide = jamais d'appel à l'API.
+- La tuile « Depuis le début du projet » montre la part consommée du budget `BUDGET_IA_EUR` (1 € par défaut), avec une jauge qui passe au rouge à 80 %.
+- Avec le faux fournisseur d'IA (développement, tests), chaque appel coûte 0 € : les coûts réels apparaissent avec OpenRouter.
+
 ## Écran de partie (démo)
 
 Page : `/parties/demo/` (`jeu:partie_demo`), publique, sans base de données ni IA ; accessible depuis le bouton « Lancer l'enquête de démo » de l'accueil. Paramètre `?suspect=<id>` pour ouvrir un suspect.
@@ -193,3 +221,4 @@ Page : `/parties/demo/` (`jeu:partie_demo`), publique, sans base de données ni 
 | Comptes | `feature/comptes` | Inscription, connexion, déconnexion, menu de l'entête, composants de formulaire, 9 tests |
 | Écran de partie (démo) | `feature/ecran-partie` | Écran de jeu en données en dur, fragments HTMX (remplacés par Vue, voir plus bas), onglets carnet / fiche, 17 tests |
 | Écran de partie en Vue | `feature/vue-ecran-partie` | Décision D-001 : écran de partie en Vue 3 sans build, API JSON de démo, HTMX retiré, 18 tests |
+| Revue n°2 | `feature/revue-2` | `charger_demo`, Mes parties et vraies parties en lecture, tableau de bord des coûts (Vue), 28 tests |
