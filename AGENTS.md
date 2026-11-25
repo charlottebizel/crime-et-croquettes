@@ -8,7 +8,7 @@ Ce fichier est lu par l'agent de chaque membre du groupe, à chaque session. Gar
 
 | Prénom | Nom d'auteur git (`git config user.name`) | Dossier | Travaille sur |
 | --- | --- | --- | --- |
-| Loïc | Qoquan | `docs/loic/` | Frontend : templates Django, HTMX, CSS, illustrations, landing page ; quelques vues simples |
+| Loïc | Qoquan | `docs/loic/` | Frontend : écrans Vue 3, templates Django, CSS, illustrations, landing page ; quelques vues simples |
 | Charlotte | charlottebizel (à vérifier sur sa machine) | `docs/charlotte/` | Backend : modèles, vues, IA, quotas, journal des coûts, tests ; dépôt GitHub, Render, Neon, CI/CD |
 
 Tu travailles pour **une seule personne** : celle dont le nom d'auteur git est celui de cette machine. Lance `git config user.name` et retrouve sa ligne. Si aucune ligne ne correspond, demande son prénom avant tout.
@@ -16,9 +16,9 @@ Tu travailles pour **une seule personne** : celle dont le nom d'auteur git est c
 ## Le projet en bref
 
 - Code, noms et textes affichés en français (`Enquete`, `Suspect`, `inscription`…), comme dans la spec.
-- Stack : Python 3.10+ (cible Ruff : py310), Django 5, templates Django + HTMX, PostgreSQL sur Neon, Render, OpenRouter.
+- Stack : Python 3.10+ (cible Ruff : py310), Django 5, templates Django pour les pages de contenu + **Vue 3** pour les écrans de jeu (API JSON, sans build, décision D-001), PostgreSQL sur Neon, Render, OpenRouter.
 - **Le contrat front ↔ back est `docs/specification.md`** : modèles, noms d'URL, variables de chaque template, schémas JSON de l'IA. On ne renomme rien sans PR qui met la spec à jour.
-- Dossiers : le frontend possède `templates/` et `static/` ; le backend possède le reste (`*/models.py`, `*/views.py`, `ia/`, `config/`, `.github/`…). Toucher au domaine de l'autre = le signaler dans la PR.
+- Dossiers : le frontend possède `templates/` et `static/` (dont `static/js/jeu/`, les composants Vue) ; le backend possède le reste (`*/models.py`, `*/views.py`, `ia/`, `config/`, `.github/`…). Toucher au domaine de l'autre = le signaler dans la PR.
 - Répartition des tâches : `Rapport/repartition-des-taches.pdf`.
 
 ## Règles IA (non négociables)

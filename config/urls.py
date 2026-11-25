@@ -11,8 +11,10 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     # Comptes : /comptes/inscription/, /comptes/connexion/, /comptes/deconnexion/
     path("comptes/", include("comptes.urls")),
-    # Jeu : /parties/demo/ (et plus tard les vraies parties, spec §5.2)
+    # Jeu, pages : /parties/demo/ (et plus tard les vraies parties, spec §5.2)
     path("parties/", include("jeu.urls")),
+    # Jeu, API JSON lue par le frontend Vue : /api/parties/… (spec §5.4)
+    path("api/parties/", include("jeu.api_urls")),
     # Pages publiques (accueil, et plus tard tarifs et page légale)
     path("", include("pages.urls")),
 ]

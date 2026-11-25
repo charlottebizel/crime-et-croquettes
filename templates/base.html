@@ -12,7 +12,8 @@
       entete       → le bandeau du haut (on peut le vider sur certaines pages)
       nav          → les liens de navigation de l'entête
       contenu      → le contenu principal de la page
-      scripts      → JavaScript propre à une page (chargé en fin de body)
+      scripts      → JavaScript propre à une page (chargé en fin de body,
+                     par exemple l'application Vue de l'écran de jeu)
 
   Thème « nuit et polar » : couleurs, polices et composants sont définis
   dans static/css/theme.css. Le décor (ville la nuit, pluie) est dans
@@ -48,21 +49,14 @@
   <link rel="stylesheet" href="{% static 'css/theme.css' %}">
 
   {% comment %}
-    HTMX : permet de mettre à jour un morceau de page (une réponse de
-    suspect, une entrée du carnet…) sans recharger toute la page,
-    uniquement avec des attributs HTML (hx-get, hx-post, hx-target…).
-    Version figée pour éviter les surprises lors d'une mise à jour.
+    Pas de framework JavaScript global : les écrans interactifs (le jeu)
+    chargent Vue eux-mêmes, dans leur bloc head_extra (décision D-001).
   {% endcomment %}
-  <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
 
   {% block head_extra %}{% endblock %}
 </head>
 
-{% comment %}
-  hx-headers : chaque requête HTMX envoie automatiquement le jeton CSRF.
-  Sans ça, Django refuserait tous les POST faits par HTMX (erreur 403).
-{% endcomment %}
-<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<body>
 
   {# Décor de fond (pluie, lune, ville) : purement décoratif, masqué aux lecteurs d'écran. #}
   {% include "composants/decor_nuit.html" %}

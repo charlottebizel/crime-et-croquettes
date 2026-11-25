@@ -1,7 +1,7 @@
 ---
 id: LB-001
 titre: Écran de partie avec données en dur
-statut: en cours            # ouvert | en cours | bloqué | terminé | abandonné
+statut: terminé            # ouvert | en cours | bloqué | terminé | abandonné
 branche: feature/ecran-partie
 créé: 2026-11-18
 mis-à-jour: 2026-11-18
@@ -29,3 +29,4 @@ Référence visuelle : la maquette « nuit et polar » (fiches avec toise, salle
 
 - 2026-11-18 : créé.
 - 2026-11-18 : code proposé et vérifié par l'agent sur une copie du projet : 27 tests pytest verts (dont 17 nouveaux), `ruff check` et `ruff format --check` OK, rendu regardé à 1440 px et à 375 px (pas de défilement horizontal), onglets testés. Reste à faire par Loïc : appliquer les fichiers, vérifier chez lui, ouvrir la PR. La case « relue par Charlotte » reste vide.
+- 2026-11-25 : mergé ; l'écran est réécrit en Vue dans LB-002 (décision D-001), les fragments de ce ticket sont supprimés.

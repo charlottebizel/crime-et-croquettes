@@ -1,24 +1,33 @@
 """
-jeu/views.py — Vues du jeu.
+jeu/views.py — Pages du jeu.
 
-Pour l'instant une seule vue : la démonstration de l'écran de partie
-(ticket LB-001), avec des données en dur (jeu/demo.py). Les vraies vues
-(spec §5.2 : jeu:partie, jeu:question, jeu:tirer_carte…) seront écrites
-par Charlotte quand les modèles existeront ; elles enverront les mêmes
-variables au même template.
+Depuis la décision D-001, l'écran de partie est une application Vue :
+la vue Django ne renvoie qu'une « coquille » (templates/jeu/partie.html)
+avec l'adresse de l'API à lire. Les données arrivent ensuite en JSON
+(jeu/api.py).
 """
 
 from django.shortcuts import render
+from django.urls import reverse
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 from . import demo
 
 
+@ensure_csrf_cookie
 def partie_demo(request):
-    """Écran de partie de démonstration, sans base de données ni IA.
+    """Écran de partie de démonstration (publique, sans base de données ni IA).
 
-    Publique (pas de connexion requise) : elle ne contient aucune donnée de
-    joueur et pourra servir d'aperçu depuis la landing page.
-    Paramètre optionnel : ?suspect=<id> pour choisir le suspect interrogé.
+    ensure_csrf_cookie : pose le cookie « csrftoken », que le frontend Vue
+    renverra dans l'en-tête X-CSRFToken de ses requêtes POST (exigé par
+    Django pour toute écriture).
     """
-    contexte = demo.contexte_partie(request.GET.get("suspect"))
-    return render(request, "jeu/partie.html", contexte)
+    return render(
+        request,
+        "jeu/partie.html",
+        {
+            "titre_page": demo.TITRE,
+            "url_api": reverse("api_jeu:partie_demo"),
+            "mode_demo": True,
+        },
+    )

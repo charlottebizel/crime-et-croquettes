@@ -2,211 +2,39 @@
 {% load static %}
 {% comment %}
   =====================================================================
-  templates/jeu/partie.html — Écran de partie (ticket LB-001)
+  templates/jeu/partie.html — Écran de partie (coquille de l'application Vue)
   =====================================================================
-  Vue actuelle : jeu.views.partie_demo (données en dur, jeu/demo.py).
-  Vue future   : jeu:partie (Charlotte), avec EXACTEMENT les mêmes variables.
+  Décision D-001 : l'écran de jeu est une application Vue 3.
+  Ce template ne contient plus le jeu lui-même : il fournit
+    - le point de montage #app-partie, avec l'adresse de l'API à lire
+      (data-url-api) et le mode démo (data-mode-demo="oui|non") ;
+    - la « carte d'imports » qui dit au navigateur où trouver Vue ;
+    - le script d'entrée static/js/jeu/main.js.
 
-  Contexte (spec §6.1) : partie, enquete, suspects, suspect_courant,
-  echanges, cartes_tirees, entrees_carnet, fiche, compteurs, joueurs,
-  inspecteur. Plus mode_demo (propre à la démo : boutons inactifs).
-
-  Disposition (maquette « nuit et polar ») :
-    entête de l'affaire (dossier, compteurs, Accuser)
-    ├── colonne gauche  : 01 Suspects (fiches à toise) + 02 Pièces à conviction
-    ├── colonne centre  : salle d'interrogatoire + conversation + question
-    └── colonne droite  : onglets Carnet d'indices / Fiche de déduction
-  Sur téléphone, les trois colonnes s'empilent.
-
-  Les ids (#conversation, #jauge-stress, #carnet, #compteurs, #zone-erreur,
-  #suspect-<id>) sont les cibles HTMX de la spec §5.4 : ne pas les renommer.
+  Contexte : titre_page, url_api, mode_demo.
+  Vue est copié dans static/vendor/vue/ (pas de CDN, pas d'étape de build).
 {% endcomment %}
 
-{% block titre %}{{ enquete.titre }} · Crimes et Croquette{% endblock %}
+{% block titre %}{{ titre_page }} · Crimes et Croquette{% endblock %}
 
 {% block head_extra %}
   <link rel="stylesheet" href="{% static 'css/partie.css' %}">
+  {# Carte d'imports : « import … from "vue" » dans nos modules charge ce fichier. #}
+  <script type="importmap">
+    {"imports": {"vue": "{% static 'vendor/vue/vue.esm-browser.prod.js' %}"}}
+  </script>
 {% endblock %}
 
 {% block contenu %}
-
-{% if mode_demo %}
-  <p class="bandeau-demo" role="note">
-    <strong>Démonstration</strong> : enquête d'exemple, sans IA. Changez de suspect pour lire les interrogatoires ; les autres actions seront branchées avec le jeu complet.
-  </p>
-{% endif %}
-
-{# ------------------------------------------------------------------ #}
-{# Entête de l'affaire                                                  #}
-{# ------------------------------------------------------------------ #}
-<header class="affaire">
-  <div class="affaire__dossier">
-    <span class="tampon affaire__tampon">Confidentiel</span>
-    <div>
-      <p class="affaire__numero machine">Affaire · code {{ partie.code_invitation }}</p>
-      <h1 class="affaire__titre">{{ enquete.titre }}</h1>
-    </div>
+  <div id="app-partie" data-url-api="{{ url_api }}" data-mode-demo="{{ mode_demo|yesno:'oui,non' }}">
+    {# Affiché le temps que Vue démarre, puis remplacé par l'écran de jeu. #}
+    <p class="chargement machine">Ouverture du dossier…</p>
   </div>
-
-  <div class="affaire__actions">
-    {% include "jeu/_compteurs.html" %}
-    {# Accuser : ouvrira le formulaire jeu:accuser (HTMX). Inactif en démo. #}
-    <button type="button" class="btn btn--tampon" {% if mode_demo %}disabled title="Disponible quand le jeu sera branché"{% endif %}>
-      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>
-      Accuser
-    </button>
-  </div>
-</header>
-
-<details class="synopsis">
-  <summary class="machine">Lire le résumé de l'affaire</summary>
-  <p>{{ enquete.synopsis }}</p>
-</details>
-
-<div class="plateau">
-
-  {# ---------------------------------------------------------------- #}
-  {# Colonne gauche : suspects et pièces à conviction                   #}
-  {# ---------------------------------------------------------------- #}
-  <aside class="plateau__gauche">
-    <section aria-labelledby="titre-suspects">
-      <h2 id="titre-suspects" class="titre-section"><span class="titre-section__num">01</span>Suspects</h2>
-      <div class="grille-suspects">
-        {% for suspect in suspects %}
-          {% include "jeu/_carte_suspect.html" %}
-        {% endfor %}
-      </div>
-    </section>
-
-    <section aria-labelledby="titre-pieces">
-      <div class="entete-section">
-        <h2 id="titre-pieces" class="titre-section"><span class="titre-section__num">02</span>Pièces à conviction</h2>
-        <span class="machine texte-doux">{{ compteurs.cartes_tirees }} / {{ compteurs.cartes_max }}</span>
-      </div>
-      <div id="pieces" class="pieces">
-        {% for carte in cartes_tirees %}
-          {% include "jeu/_carte.html" %}
-        {% empty %}
-          <p class="texte-doux">Aucune pièce tirée pour l'instant.</p>
-        {% endfor %}
-      </div>
-      {# Tirer une carte : hx-post vers jeu:tirer_carte. Inactif en démo. #}
-      <button type="button" class="btn btn--tirer"
-              {% if mode_demo or not compteurs.peut_tirer_carte %}disabled{% endif %}
-              {% if mode_demo %}title="Disponible quand le jeu sera branché"{% endif %}>
-        Tirer une carte
-      </button>
-    </section>
-  </aside>
-
-  {# ---------------------------------------------------------------- #}
-  {# Colonne centre : salle d'interrogatoire                            #}
-  {# ---------------------------------------------------------------- #}
-  <section class="plateau__centre interrogatoire" aria-labelledby="titre-interrogatoire">
-
-    <div class="salle">
-      {# Décor : murs, lampe et faisceau de lumière (purement décoratif). #}
-      <div class="salle__decor" aria-hidden="true">
-        <span class="salle__faisceau"></span>
-        <svg class="salle__lampe" width="80" height="60" viewBox="0 0 80 60"><path d="M40 0 L40 18" stroke="#3A4865" stroke-width="3"/><path d="M14 44 Q40 6 66 44 Z" fill="#26324A" stroke="#3A4865" stroke-width="2" stroke-linejoin="round"/><ellipse cx="40" cy="45" rx="13" ry="5" fill="#FFE3A0"/></svg>
-        <span class="salle__sol"></span>
-      </div>
-
-      <p class="salle__horodatage machine">
-        Salle d'interrogatoire
-        <span class="salle__rec"><span class="salle__point"></span>Enregistrement</span>
-      </p>
-
-      <div class="salle__suspect">
-        <div class="salle__portrait">
-          {% include "composants/chat.html" with apparence=suspect_courant.apparence label=suspect_courant.nom %}
-        </div>
-        <h2 id="titre-interrogatoire" class="salle__nom machine">N° {{ suspect_courant.numero|stringformat:"02d" }} · {{ suspect_courant.nom }}</h2>
-      </div>
-
-      {% include "jeu/_jauge_stress.html" %}
-
-      <p class="salle__ia">Suspect joué par une IA</p>
-    </div>
-
-    {# Conversation. aria-live : une nouvelle réponse (HTMX) est lue automatiquement. #}
-    <div id="conversation" class="conversation" aria-live="polite">
-      {% if echanges %}
-        {% include "jeu/_echange.html" with echange=echanges %}
-      {% else %}
-        <div class="conversation__vide">
-          <p class="conversation__vide-titre">Pas encore interrogé</p>
-          <p>{{ suspect_courant.nom }} se lèche les pattes sous la lampe. À vous la première question, inspecteur.</p>
-        </div>
-      {% endif %}
-    </div>
-
-    {# Zone où HTMX affichera les erreurs IA ou de quota (spec §5.4, exigence O5). #}
-    <div id="zone-erreur" role="alert"></div>
-
-    {# Formulaire de question. Version finale : hx-post vers jeu:question,  #}
-    {# hx-target="#conversation" hx-swap="beforeend". Inactif en démo.      #}
-    <form class="question" method="post" onsubmit="return false;">
-      <label for="question" class="etiquette">Question à {{ suspect_courant.nom }}</label>
-      <div class="question__ligne">
-        <input id="question" name="question" type="text" class="champ" maxlength="300"
-               placeholder="Pourquoi avez-vous des poils sur le comptoir ?"
-               {% if mode_demo or not compteurs.peut_poser_question %}disabled{% endif %}>
-        <button type="submit" class="btn btn--ambre"
-                {% if mode_demo or not compteurs.peut_poser_question %}disabled{% endif %}>
-          Interroger
-        </button>
-      </div>
-      <p class="question__aide">
-        Les suspects répondent grâce à une IA : ils peuvent mentir, c'est le jeu.
-        N'écrivez aucune donnée personnelle.
-        {% if compteurs.peut_poser_question %}Encore {{ compteurs.questions_restantes }} question{{ compteurs.questions_restantes|pluralize }} dans cette partie.{% else %}Plus de questions disponibles dans cette partie.{% endif %}
-      </p>
-    </form>
-  </section>
-
-  {# ---------------------------------------------------------------- #}
-  {# Colonne droite : carnet et fiche (onglets gérés par partie.js)     #}
-  {# Sans JavaScript, les deux panneaux restent affichés l'un sous      #}
-  {# l'autre : rien n'est perdu.                                        #}
-  {# ---------------------------------------------------------------- #}
-  <aside class="plateau__droite onglets" data-onglets>
-    <div class="onglets__liste" role="tablist" aria-label="Carnet et fiche" hidden>
-      <button type="button" role="tab" id="onglet-carnet" aria-controls="panneau-carnet" aria-selected="true" class="onglets__onglet">Carnet d'indices</button>
-      <button type="button" role="tab" id="onglet-fiche" aria-controls="panneau-fiche" aria-selected="false" tabindex="-1" class="onglets__onglet">Fiche de déduction</button>
-    </div>
-
-    <section id="panneau-carnet" class="onglets__panneau carnet" role="tabpanel" aria-labelledby="onglet-carnet">
-      <h2 class="onglets__titre">Carnet d'indices</h2>
-      <p class="manuscrit carnet__intro">Rempli par l'IA à chaque réponse. À moi de juger.</p>
-      <div id="carnet" class="carnet__entrees">
-        {% for entree in entrees_carnet %}
-          {% include "jeu/_entree_carnet.html" %}
-        {% empty %}
-          <p>Le carnet est encore vide.</p>
-        {% endfor %}
-      </div>
-    </section>
-
-    <section id="panneau-fiche" class="onglets__panneau fiche" role="tabpanel" aria-labelledby="onglet-fiche">
-      <h2 class="onglets__titre">Fiche de déduction</h2>
-      <div class="fiche__papier">
-        <p class="manuscrit">Je barre, je valide… rien ici n'appelle l'IA.</p>
-        {% for groupe in fiche %}
-          <div class="fiche__groupe">
-            <h3 class="fiche__titre">{{ groupe.titre }}</h3>
-            {% for case in groupe.cases %}
-              {% include "jeu/_case_fiche.html" %}
-            {% endfor %}
-          </div>
-        {% endfor %}
-      </div>
-    </section>
-  </aside>
-
-</div>
+  <noscript>
+    <p class="erreur-chargement">L'écran de jeu a besoin de JavaScript. Activez-le dans votre navigateur pour mener l'enquête.</p>
+  </noscript>
 {% endblock %}
 
 {% block scripts %}
-  <script src="{% static 'js/partie.js' %}" defer></script>
+  <script type="module" src="{% static 'js/jeu/main.js' %}"></script>
 {% endblock %}
