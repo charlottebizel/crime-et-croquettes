@@ -21,4 +21,6 @@ urlpatterns = [
         api.interrogatoire_demo,
         name="interrogatoire_demo",
     ),
+    path("<int:pk>/", api.partie, name="partie"),
+    path("<int:pk>/suspects/<int:suspect_id>/", api.interrogatoire, name="interrogatoire"),
 ]

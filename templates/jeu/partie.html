@@ -12,6 +12,8 @@
     - le script d'entrée static/js/jeu/main.js.
 
   Contexte : titre_page, url_api, mode_demo.
+  Utilisé par la démo (jeu:partie_demo) ET les vraies parties (jeu:partie) :
+  seule l'adresse de l'API change.
   Vue est copié dans static/vendor/vue/ (pas de CDN, pas d'étape de build).
 {% endcomment %}
 
@@ -19,10 +21,7 @@
 
 {% block head_extra %}
   <link rel="stylesheet" href="{% static 'css/partie.css' %}">
-  {# Carte d'imports : « import … from "vue" » dans nos modules charge ce fichier. #}
-  <script type="importmap">
-    {"imports": {"vue": "{% static 'vendor/vue/vue.esm-browser.prod.js' %}"}}
-  </script>
+  {% include "composants/vue.html" %}
 {% endblock %}
 
 {% block contenu %}

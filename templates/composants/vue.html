@@ -1,0 +1,13 @@
+{% load static %}
+{% comment %}
+  templates/composants/vue.html — Charge Vue 3 pour un écran interactif (décision D-001)
+  ------------------------------------------------------------------------------
+  À inclure dans le bloc head_extra d'une page qui monte une application Vue :
+      include "composants/vue.html"
+  La carte d'imports dit au navigateur que « import … from "vue" » désigne
+  le fichier copié dans static/vendor/vue/ (pas de CDN, pas d'étape de build).
+  Elle doit apparaître AVANT le premier <script type="module"> de la page.
+{% endcomment %}
+<script type="importmap">
+  {"imports": {"vue": "{% static 'vendor/vue/vue.esm-browser.prod.js' %}"}}
+</script>
