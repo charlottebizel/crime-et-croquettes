@@ -142,3 +142,34 @@ class ProfilEtPalierTests(TestCase):
         utilisateur = User.objects.create_user("duchesse", "d@example.com", "x")
         utilisateur.delete()
         self.assertFalse(Profil.objects.filter(pseudo="duchesse").exists())
+
+
+@override_settings(STORAGES=STOCKAGE_TESTS)
+class OeilMotDePasseTests(TestCase):
+    """LB-006 : bouton « œil » à côté de chaque champ de mot de passe."""
+
+    def test_connexion_a_un_bouton_oeil(self):
+        reponse = self.client.get(reverse("comptes:connexion"))
+        self.assertContains(reponse, 'class="champ-mdp__oeil"', count=1)
+        self.assertContains(reponse, 'data-oeil="id_password"')
+
+    def test_inscription_a_un_bouton_par_mot_de_passe(self):
+        reponse = self.client.get(reverse("comptes:inscription"))
+        self.assertContains(reponse, 'class="champ-mdp__oeil"', count=2)
+        self.assertContains(reponse, 'data-oeil="id_password1"')
+        self.assertContains(reponse, 'data-oeil="id_password2"')
+
+    def test_bouton_sans_effet_sur_le_formulaire(self):
+        """type="button" (n'envoie pas), sans name (pas lu par Django), caché sans JavaScript."""
+        contenu = self.client.get(reverse("comptes:connexion")).content.decode()
+        debut = contenu.index('<button type="button" class="champ-mdp__oeil"')
+        bouton = contenu[debut : contenu.index(">", debut)]
+        self.assertNotIn("name=", bouton)
+        self.assertIn("hidden", bouton)
+        self.assertIn('aria-pressed="false"', bouton)
+
+    def test_script_charge_et_champs_ordinaires_sans_oeil(self):
+        reponse = self.client.get(reverse("comptes:inscription"))
+        self.assertContains(reponse, "js/oeil.js")
+        self.assertNotContains(reponse, 'data-oeil="id_username"')
+        self.assertNotContains(reponse, 'data-oeil="id_email"')

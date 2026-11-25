@@ -47,6 +47,8 @@
 
   {# Feuille de style du thème (variables de couleurs + composants communs). #}
   <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+  {# Bouton « œil » des mots de passe (LB-006), sans effet sur les autres pages. #}
+  <script src="{% static 'js/oeil.js' %}" defer></script>
 
   {% comment %}
     Pas de framework JavaScript global : les écrans interactifs (le jeu)

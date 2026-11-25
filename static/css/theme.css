@@ -437,6 +437,50 @@ a:hover {
 .champ::placeholder {
   color: var(--texte-doux);
 }
+/* Champ de mot de passe + bouton « œil » (LB-006, composants/champ.html) */
+.champ-mdp {
+  position: relative;
+}
+.champ-mdp .champ {
+  padding-right: 52px; /* le texte ne passe pas sous le bouton */
+}
+.champ-mdp .champ::-ms-reveal {
+  display: none; /* Edge a son propre œil : on n'en garde qu'un */
+}
+.champ-mdp__oeil {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;  /* zone de clic ≥ 44 px */
+  height: 46px;
+  border: none;
+  border-radius: var(--rayon);
+  background: none;
+  color: var(--texte-doux);
+  cursor: pointer;
+}
+.champ-mdp__oeil[hidden] {
+  display: none;
+}
+.champ-mdp__oeil:hover {
+  color: var(--ambre);
+}
+.champ-mdp__icone {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.champ-mdp__oeil[aria-pressed="true"] .champ-mdp__icone--voir,
+.champ-mdp__oeil[aria-pressed="false"] .champ-mdp__icone--cacher {
+  display: none;
+}
 .etiquette {
   display: block;
   margin-bottom: 6px;
@@ -558,6 +602,15 @@ a:hover {
 }
 .dossier .champ::placeholder {
   color: #8A7E6E;
+}
+/* Œil des mots de passe sur le papier : encres du dossier (contraste
+   7,3:1 au repos, 9,5:1 au survol ; le gris et l'ambre du fond de nuit
+   seraient trop pâles ici). */
+.dossier .champ-mdp__oeil {
+  color: var(--encre-douce);
+}
+.dossier .champ-mdp__oeil:hover {
+  color: var(--encre-bleue);
 }
 
 /* --- Champs, aide et erreurs --- */
