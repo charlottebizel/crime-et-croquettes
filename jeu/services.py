@@ -1,7 +1,9 @@
 """
 jeu/services.py — Règles du jeu, sans HTTP (les vues appellent ces fonctions).
 
-Pour l'instant : poser une question à un suspect (spec §4, étape 4).
+Pour l'instant :
+  - poser une question à un suspect (spec §4, étape 4) ;
+  - créer la fiche de déduction d'un joueur (spec §3.4, 15 cases).
 La vérification du quota `questions_par_partie` arrive en S4 (tâche quotas).
 """
 
@@ -12,7 +14,7 @@ from django.db.models import F
 
 from ia import services as ia_services
 
-from .models import EntreeCarnet, EtatSuspect, Message, Partie
+from .models import CaseFiche, EntreeCarnet, EtatSuspect, Message, Partie
 
 QUESTION_MAX = 300
 
@@ -90,3 +92,30 @@ def interroger_suspect(partie, suspect, question: str, joueur, fournisseur=None)
     partie.refresh_from_db(fields=["questions_posees"])
 
     return ResultatQuestion(question=message_question, reponse=message_reponse, entrees=entrees)
+
+
+def assurer_fiche(partie, joueur) -> None:
+    """Crée les 15 cases de la fiche de déduction de `joueur` si elles manquent.
+
+    Spec §3.4 : une case par suspect, objet et lieu de l'enquête, état
+    « inconnu ». Sans danger si on l'appelle plusieurs fois (les cases déjà
+    présentes ne sont pas recréées) : on l'appelle au lancement de la partie,
+    quand un joueur la rejoint, et par sécurité avant d'afficher la fiche.
+    """
+    existantes = CaseFiche.objects.filter(partie=partie, joueur=joueur)
+    deja = {
+        (case.suspect_id, case.objet_id, case.lieu_id)
+        for case in existantes.only("suspect_id", "objet_id", "lieu_id")
+    }
+    enquete = partie.enquete
+    a_creer = []
+    for suspect in enquete.suspects.all():
+        if (suspect.pk, None, None) not in deja:
+            a_creer.append(CaseFiche(partie=partie, joueur=joueur, suspect=suspect))
+    for objet in enquete.objets.all():
+        if (None, objet.pk, None) not in deja:
+            a_creer.append(CaseFiche(partie=partie, joueur=joueur, objet=objet))
+    for lieu in enquete.lieux.all():
+        if (None, None, lieu.pk) not in deja:
+            a_creer.append(CaseFiche(partie=partie, joueur=joueur, lieu=lieu))
+    CaseFiche.objects.bulk_create(a_creer)
