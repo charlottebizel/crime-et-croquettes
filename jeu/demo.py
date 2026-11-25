@@ -1,19 +1,23 @@
 """
-jeu/demo.py — Données en dur de l'écran de partie (ticket LB-001).
+jeu/demo.py — Données en dur de l'enquête de démonstration.
 
-Enquête de démonstration : « Qui a volé le saumon du dimanche ? ».
+Enquête : « Qui a volé le saumon du dimanche ? ». Aucune base de données,
+aucun appel à l'IA.
 
-Ces données respectent EXACTEMENT les variables de contexte décrites dans
-docs/specification.md §6.1 à §6.6. Quand Charlotte aura écrit les modèles
-et les vraies vues, elles enverront les mêmes clés au même template :
-templates/jeu/partie.html ne changera pas.
+Utilisé par l'API JSON de démo (jeu/api.py), elle-même lue par l'écran de
+partie en Vue (static/js/jeu/). Les clés renvoyées sont EXACTEMENT celles de
+docs/specification.md §6 : les vraies vues de l'API (Charlotte) renverront
+les mêmes, et le frontend Vue ne changera pas.
 
-Rien ici n'appelle le modèle d'IA, et la solution de l'enquête n'est
-volontairement pas présente (elle ne doit jamais atteindre le navigateur).
+La solution de l'enquête n'est volontairement pas présente : elle ne doit
+jamais atteindre le navigateur.
 """
 
+TITRE = "Qui a volé le saumon du dimanche ?"
+
 # --- Apparence des chats (spec §3.2) --------------------------------------
-# Lue par templates/composants/chat.html pour dessiner chaque portrait.
+# Lue par le composant Vue ChatPortrait (static/js/jeu/composants/) pour dessiner
+# chaque portrait, et par templates/composants/chat.html côté Django.
 
 INSPECTEUR = {
     "pelage": "#D9A066",
@@ -312,34 +316,23 @@ def _suspects_enrichis() -> list[dict]:
     ]
 
 
-def contexte_partie(suspect_demande: str | None) -> dict:
-    """Construit le contexte complet de jeu/partie.html (spec §6.1).
+def etat_partie() -> dict:
+    """État complet de la partie de démo, SANS les conversations (spec §6.1).
 
-    suspect_demande : valeur brute de ?suspect= dans l'URL. Si elle est
-    absente ou invalide, on affiche le premier suspect (comportement prévu
-    par la spec), sans erreur.
+    Renvoyé par GET /api/parties/demo/. Les conversations sont chargées
+    suspect par suspect (interrogatoire()), comme le fera l'API réelle.
     """
-    suspects = _suspects_enrichis()
-
-    try:
-        id_demande = int(suspect_demande) if suspect_demande else None
-    except ValueError:
-        id_demande = None
-    suspect_courant = next((s for s in suspects if s["id"] == id_demande), suspects[0])
-
     questions_posees, questions_max = 12, 20
     cartes_tirees, cartes_max = len(CARTES_TIREES), 6
 
     return {
         "partie": {"pk": 0, "statut": "en_cours", "code_invitation": "SAUMON42"},
         "enquete": {
-            "titre": "Qui a volé le saumon du dimanche ?",
+            "titre": TITRE,
             "synopsis": "Dimanche, pendant la sieste de midi, le saumon prévu pour le "
             "dîner a disparu de la cuisine. Cinq chats étaient dans la maison.",
         },
-        "suspects": suspects,
-        "suspect_courant": suspect_courant,
-        "echanges": CONVERSATIONS.get(suspect_courant["id"], []),
+        "suspects": _suspects_enrichis(),
         "cartes_tirees": CARTES_TIREES,
         "entrees_carnet": ENTREES_CARNET,
         "fiche": FICHE,
@@ -354,6 +347,17 @@ def contexte_partie(suspect_demande: str | None) -> dict:
         },
         "joueurs": ["Inspecteur Moustache"],
         "inspecteur": INSPECTEUR,
-        # Propre à la démo : désactive les boutons qui demandent le backend.
+        # Propre à la démo : l'écran désactive les actions qui demandent le backend.
         "mode_demo": True,
     }
+
+
+def interrogatoire(suspect_id: int) -> dict | None:
+    """Un suspect et sa conversation (spec §6.2 et §6.3), ou None s'il n'existe pas.
+
+    Renvoyé par GET /api/parties/demo/suspects/<id>/.
+    """
+    suspect = next((s for s in _suspects_enrichis() if s["id"] == suspect_id), None)
+    if suspect is None:
+        return None
+    return {"suspect": suspect, "echanges": CONVERSATIONS.get(suspect_id, [])}

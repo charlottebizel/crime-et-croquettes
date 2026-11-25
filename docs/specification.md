@@ -25,11 +25,14 @@ Supplémentaires visées : **sorties garanties par schéma JSON** (`response_for
 ## 2. Architecture
 
 ```
-Navigateur (HTML + HTMX)
-      │  requêtes HTTP (pages complètes ou fragments HTML)
+Navigateur
+  ├── pages de contenu (accueil, comptes, légal, tarifs) : HTML rendu par Django
+  └── écrans de jeu : application Vue 3 (static/js/jeu/), données en JSON
+      │  requêtes HTTP : pages HTML  +  API JSON /api/… (spec §5.4)
       ▼
 Django sur Render (gunicorn + WhiteNoise)
-      ├── vues (comptes, jeu, gestion, pages)
+      ├── vues HTML (comptes, pages, coquilles des écrans Vue)
+      ├── API JSON (jeu/api.py)
       ├── jeu/services.py  ── logique de partie, quotas, vérifications
       └── ia/services.py   ── seul point d'appel au modèle + journal AppelIA
               │                         │
@@ -38,6 +41,8 @@ Django sur Render (gunicorn + WhiteNoise)
 ```
 
 La clé OpenRouter n'existe que côté serveur (variable d'environnement).
+
+**Frontend (décision D-001, `docs/decisions/D-001-vue-ecrans-de-jeu.md`)** : Django rend les pages de contenu avec ses templates ; les écrans interactifs (partie, et ensuite nouvelle enquête, mes parties, tableau de bord des coûts) sont des applications **Vue 3**. Vue est copié dans `static/vendor/vue/` et chargé par une carte d'imports : pas de CDN, pas d'étape de build, rien à changer sur Render ni dans le CI. HTMX n'est plus utilisé.
 
 ---
 
@@ -175,7 +180,7 @@ Rôle administrateur = `user.is_staff`.
 
 ## 5. URLs
 
-`name` = nom Django à utiliser dans `{% url %}`. « Fragment » = réponse HTML partielle pour HTMX.
+`name` = nom Django à utiliser dans `{% url %}`. Les écrans de jeu sont des « coquilles » HTML qui chargent l'application Vue ; leurs données passent par l'API JSON (§5.4).
 
 ### 5.1 Public et comptes
 
@@ -190,20 +195,17 @@ Rôle administrateur = `user.is_staff`.
 | GET | `/comptes/profil/` | `comptes:profil` | `comptes/profil.html` | Palier, quotas restants |
 | GET/POST | `/comptes/supprimer/` | `comptes:supprimer` | `comptes/supprimer.html` | Confirmation, suppression en cascade |
 
-### 5.2 Jeu (connexion obligatoire)
+### 5.2 Jeu, pages (connexion obligatoire, sauf la démo)
 
 | Méthode | URL | name | Réponse |
 |---|---|---|---|
-| GET | `/parties/` | `jeu:liste` | `jeu/liste.html` |
+| GET | `/parties/demo/` | `jeu:partie_demo` | Coquille `jeu/partie.html`, API `/api/parties/demo/`, mode démo. **Publique.** |
+| GET | `/parties/` | `jeu:liste` | `jeu/liste.html` (ou écran Vue, à décider) |
 | GET/POST | `/parties/nouvelle/` | `jeu:nouvelle` | `jeu/nouvelle.html` ; POST → redirection vers la partie |
 | POST | `/parties/rejoindre/` | `jeu:rejoindre` | champ `code` → redirection |
-| GET | `/parties/<int:pk>/` | `jeu:partie` | `jeu/partie.html` (paramètre optionnel `?suspect=<id>`) |
-| GET | `/parties/<int:pk>/suspects/<int:sid>/` | `jeu:interrogatoire` | Fragment `jeu/_interrogatoire.html` |
-| POST | `/parties/<int:pk>/suspects/<int:sid>/question/` | `jeu:question` | Fragment `jeu/_echange.html` + OOB (voir 5.4) |
-| POST | `/parties/<int:pk>/cartes/tirer/` | `jeu:tirer_carte` | Fragment `jeu/_carte.html` + OOB |
-| POST | `/parties/<int:pk>/carnet/<int:eid>/avis/` | `jeu:avis` | Fragment `jeu/_entree_carnet.html` |
-| POST | `/parties/<int:pk>/fiche/<int:cid>/` | `jeu:case_fiche` | Fragment `jeu/_case_fiche.html` (fait tourner inconnu → barré → validé → inconnu) |
-| GET/POST | `/parties/<int:pk>/accuser/` | `jeu:accuser` | GET fragment `jeu/_accusation.html` ; POST → `jeu/resultat.html` |
+| GET | `/parties/<int:pk>/` | `jeu:partie` | Coquille `jeu/partie.html` avec `url_api` = `/api/parties/<pk>/`, `mode_demo` = False (paramètre optionnel `?suspect=<id>`, lu par Vue) |
+
+Contexte de la coquille `jeu/partie.html` : `titre_page`, `url_api`, `mode_demo`. La vue est décorée par `@ensure_csrf_cookie` (Vue renvoie ce cookie dans `X-CSRFToken`).
 
 ### 5.3 Administration (`is_staff` obligatoire)
 
@@ -215,27 +217,44 @@ Rôle administrateur = `user.is_staff`.
 
 L'admin Django (`/admin/`) reste disponible en secours mais les trois pages ci-dessus sont celles montrées en démo.
 
-### 5.4 Réponses HTMX multiples (out-of-band)
+### 5.4 API JSON du jeu (lue par l'application Vue)
 
-Après une question (`jeu:question`), la réponse contient :
-1. le fragment principal `jeu/_echange.html` (question + réponse), inséré dans `#conversation` (`hx-swap="beforeend"`) ;
-2. en `hx-swap-oob` :
-   - `jeu/_jauge_stress.html` → remplace `#jauge-stress`
-   - `jeu/_carte_suspect.html` → remplace `#suspect-<id>` (jauge de la fiche suspect à gauche)
-   - une `jeu/_entree_carnet.html` par nouvelle entrée → `hx-swap-oob="afterbegin:#carnet"`
-   - `jeu/_compteurs.html` → remplace `#compteurs` (questions et cartes restantes)
+Préfixe `/api/parties/`. Fichiers : `jeu/api.py`, `jeu/api_urls.py` (namespace `api_jeu`).
+Toutes les adresses se construisent à partir de **l'adresse de la partie** `P` (`/api/parties/demo/` ou `/api/parties/<pk>/`) : le frontend Vue ne connaît que `P`.
 
-Après `jeu:tirer_carte` : `_carte.html` (principal) + OOB `_entree_carnet.html` et `_compteurs.html`.
+| Méthode | Adresse | Corps envoyé | Réponse 200 | État |
+|---|---|---|---|---|
+| GET | `P` | — | état de la partie : clés du §6.1 **sauf** `suspect_courant` et `echanges`, plus `mode_demo` | démo ✅, réel à faire |
+| GET | `P` `suspects/<sid>/` | — | `{"suspect": §6.2, "echanges": [§6.3…]}` | démo ✅, réel à faire |
+| POST | `P` `suspects/<sid>/question/` | `{"question": "…"}` (1 à 300 caractères) | `{"echange": [question §6.3, réponse §6.3], "suspect": §6.2 à jour, "nouvelles_entrees": [§6.4…], "compteurs": §6.6}` | à faire (appelle `jeu.services.interroger_suspect`) |
+| POST | `P` `cartes/tirer/` | `{}` | `{"carte": {code, titre, texte, etiquette}, "entree": §6.4, "compteurs": §6.6}` | à faire |
+| POST | `P` `carnet/<eid>/avis/` | `{"avis": "fiable"\|"douteux"\|"faux"\|"", "note"?: "…"}` | `{"entree": §6.4 à jour}` | à faire |
+| POST | `P` `fiche/<cid>/` | `{}` | `{"case": {id, nom, etat}}` (l'état tourne : inconnu → barre → valide → inconnu) | à faire |
+| POST | `P` `accuser/` | `{"suspect": id, "objet": id, "lieu": id}` | `{"correcte": bool, "statut": "gagnee"\|"perdue"\|"en_cours"}` (+ la solution seulement si la partie est finie) | à faire, écran Vue à faire |
 
-En cas d'erreur IA ou de quota : fragment `jeu/_erreur.html` à la place de `_echange.html`, **avec la question renvoyée** pour la conserver dans le champ (`question_saisie`). Code HTTP 200 (pour qu'HTMX l'affiche) et en-tête `HX-Retarget: #zone-erreur`.
+Règles communes :
+- **Accès** : les vraies parties exigent la connexion et la participation (`get_object_or_404(Partie, pk=pk, participations__joueur=request.user)`, §8). La démo est publique, en lecture seule (POST → 405).
+- **CSRF** : chaque POST porte l'en-tête `X-CSRFToken` (lu dans le cookie `csrftoken`, posé par la page). Ne pas utiliser `csrf_exempt`.
+- **Erreurs** : toujours `{"erreur": {"type": "<code>", "message": "<phrase pour le joueur>"}}`, jamais de stack trace. Vue affiche `message` tel quel, sous la conversation, et **garde la question saisie** (O5).
+
+| Cas | Statut HTTP | `type` |
+|---|---|---|
+| Saisie invalide (question vide ou trop longue) | 400 | `saisie` |
+| Non connecté | 401 | `connexion` |
+| Partie d'un autre joueur, partie terminée | 403 | `interdit` |
+| Quota du palier atteint | 403 | `quota` |
+| Élément inconnu | 404 | `introuvable` |
+| Erreur IA (§7.5) | 503 (`delai`, `panne`), 402 (`credit`), 502 (`invalide`) | `delai`, `panne`, `credit`, `invalide` |
+
+Le frontend a déjà le code de ces appels (`static/js/jeu/composants/EcranPartie.js`), testé dans le navigateur avec des réponses simulées : il suffit que les endpoints réels respectent ce tableau.
 
 ---
 
-## 6. Variables de contexte des templates
+## 6. Données des écrans
 
-Les noms ci-dessous sont **le contrat**. Les types sont indicatifs (objets modèles ou dicts).
+Les noms ci-dessous sont **le contrat**. Pour les écrans de jeu (Vue), ce sont les **clés du JSON** renvoyé par l'API (§5.4), toujours des dicts et des listes sérialisables (pas d'objets modèles). Pour les pages Django, ce sont les variables de contexte des templates.
 
-### 6.1 `jeu/partie.html`
+### 6.1 Écran de partie (API `P`)
 
 | Variable | Contenu |
 |---|---|
@@ -405,7 +424,7 @@ Choix des modèles : comparer 2–3 candidats sur la page des modèles d'OpenRou
 
 ### 7.5 Erreurs (O5)
 
-| Cas | Détection | Message joueur (fragment `_erreur.html`) |
+| Cas | Détection | Message joueur (`erreur.message` de l'API, §5.4) |
 |---|---|---|
 | `delai` | `openai.APITimeoutError` | « Le suspect met trop de temps à répondre. Réessayez dans un instant. » |
 | `panne` | `APIConnectionError`, statut 5xx | « Le service d'IA est momentanément indisponible. Vous pouvez continuer à consulter vos indices et votre fiche. » |
@@ -491,4 +510,4 @@ Mise en veille de Render gratuit : ouvrir l'application quelques minutes avant c
 
 ## 13. Maquette
 
-La maquette de l'écran de jeu (thème nuit et polar) est partagée séparément. Elle montre : fiches suspects avec toise et jauge de stress, salle d'interrogatoire avec jauge détaillée, bulles de dialogue avec « Généré par IA » et variation de stress, pièces à conviction, carnet (témoignages annotables, preuves toujours vraies), fiche de déduction à cases. Toutes les données affichées correspondent aux variables du §6.
+La maquette de l'écran de jeu (thème nuit et polar) est partagée séparément. Elle montre : fiches suspects avec toise et jauge de stress, salle d'interrogatoire avec jauge détaillée, bulles de dialogue avec « Généré par IA » et variation de stress, pièces à conviction, carnet (témoignages annotables, preuves toujours vraies), fiche de déduction à cases. Toutes les données affichées correspondent aux clés du §6. Depuis D-001, l'écran est réalisé en Vue (`static/js/jeu/`).

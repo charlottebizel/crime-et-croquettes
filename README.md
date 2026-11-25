@@ -11,14 +11,14 @@ Projet 2 du cours 5IDEV — un produit avec l'IA au cœur.
 | Membre | Rôle principal |
 |---|---|
 | Charlotte | Backend Django, dépôt GitHub, Render, Neon, CI/CD |
-| Loïc | Frontend : templates Django, HTMX, CSS, illustrations |
+| Loïc | Frontend : écrans Vue 3, templates Django, CSS, illustrations |
 
 Les rôles du cours (lead technique, référent QA, référent déploiement) tournent chaque semaine.
 
 ## Stack
 
 - **Backend** : Python 3.12, Django 5
-- **Frontend** : templates Django + HTMX (pas de framework JavaScript)
+- **Frontend** : templates Django pour les pages de contenu, **Vue 3** pour les écrans de jeu (API JSON, sans étape de build, voir `docs/decisions/D-001-vue-ecrans-de-jeu.md`)
 - **Base de données** : PostgreSQL sur Neon
 - **Hébergement** : Render (gunicorn + WhiteNoise)
 - **IA** : OpenRouter (appels uniquement côté serveur)
@@ -57,11 +57,19 @@ templates/
 │   ├── chat.html             Portrait de chat en SVG (suspects, inspecteur)
 │   └── decor_nuit.html       Décor de fond (pluie, lune, ville)
 └── <app>/                    Pages de chaque app (pages/, jeu/, comptes/…)
-    └── _fragment.html        Fragments renvoyés à HTMX (préfixe _)
 
 static/
-└── css/
-    └── theme.css             Variables de couleurs, polices et composants
+├── css/
+│   ├── theme.css             Variables de couleurs, polices et composants
+│   └── partie.css            Écran de partie
+├── js/jeu/                   Application Vue des écrans de jeu
+│   ├── main.js               Point d'entrée (monte l'application sur #app-partie)
+│   ├── api.js                lireJSON / envoyerJSON (CSRF, erreurs lisibles)
+│   ├── outils.js             Petites fonctions partagées
+│   └── composants/           EcranPartie, Interrogatoire, CarteSuspect, JaugeStress,
+│                             Compteurs, PieceConviction, EntreeCarnet,
+│                             FicheDeduction, ChatPortrait
+└── vendor/vue/               Vue 3.5.13 (vue.esm-browser.prod.js + licence MIT)
 ```
 
 ### Créer une page
@@ -117,9 +125,13 @@ Composants CSS prêts à l'emploi : `.btn`, `.btn--ambre`, `.btn--tampon`, `.pan
 
 Accessoires disponibles : `couronne`, `serviette`, `pelote`, `monocle`, `bandana`, `inspecteur`, `aucun`.
 
-### HTMX
+### Vue 3 (écrans de jeu)
 
-HTMX est chargé dans `base.html`. Le jeton CSRF est envoyé automatiquement avec chaque requête HTMX (attribut `hx-headers` sur `<body>`), donc les `hx-post` fonctionnent sans rien ajouter.
+- **Pas de build** : Vue est dans `static/vendor/vue/`. Le template de l'écran déclare une carte d'imports (`<script type="importmap">`) qui fait pointer `import … from "vue"` vers ce fichier, puis charge `static/js/jeu/main.js` en module.
+- **Un composant = un fichier JS** dans `static/js/jeu/composants/`, qui exporte un objet Vue (`props`, `data`, `computed`, `methods`, `template` en chaîne). Les composants s'importent entre eux avec des chemins relatifs (`./ChatPortrait.js`) ; un test pytest vérifie que chaque import pointe vers un fichier existant.
+- **Données** : le template passe l'adresse de l'API dans `data-url-api` ; Vue lit tout le reste en JSON (spec §5.4). Les écritures passent par `envoyerJSON()`, qui ajoute l'en-tête `X-CSRFToken`.
+- **Erreurs** : l'API renvoie `{"erreur": {"type", "message"}}` ; Vue affiche le message et garde la saisie du joueur.
+- **Dessin des chats** : `ChatPortrait.js` (Vue) est la copie de `templates/composants/chat.html` (Django) : toute modification se fait dans les deux.
 
 ### Formulaires
 
@@ -166,13 +178,12 @@ Les tests utilisent le stockage de fichiers statiques simple de Django (`overrid
 
 ## Écran de partie (démo)
 
-Adresse : `/parties/demo/` (nom Django `jeu:partie_demo`), publique, sans base de données ni IA. Paramètre `?suspect=<id>` pour choisir le suspect interrogé.
+Page : `/parties/demo/` (`jeu:partie_demo`), publique, sans base de données ni IA ; accessible depuis le bouton « Lancer l'enquête de démo » de l'accueil. Paramètre `?suspect=<id>` pour ouvrir un suspect.
 
-- Données en dur : `jeu/demo.py`, au format exact de `docs/specification.md` §6.1 à §6.6. Les vraies vues enverront les mêmes variables au même template.
-- La conversation s'appelle `echanges` dans le contexte (et pas `messages`, réservé aux notifications Django affichées par `base.html`).
-- Template : `templates/jeu/partie.html` et ses fragments (`_carte_suspect`, `_jauge_stress`, `_echange`, `_carte`, `_entree_carnet`, `_case_fiche`, `_compteurs`), réutilisables tels quels pour les réponses HTMX (spec §5.4).
-- Styles : `static/css/partie.css` (chargé seulement par cette page). JavaScript : `static/js/partie.js` (onglets Carnet / Fiche, accessibles au clavier ; sans JavaScript, les deux panneaux s'affichent l'un sous l'autre).
-- En démo, les actions qui demandent le backend (Interroger, Tirer une carte, avis, cases de la fiche, Accuser) sont affichées mais inactives.
+- La page (`templates/jeu/partie.html`) n'est qu'une coquille : l'écran est l'application Vue de `static/js/jeu/`.
+- API de démo : `GET /api/parties/demo/` (état de la partie) et `GET /api/parties/demo/suspects/<id>/` (un suspect et sa conversation), dans `jeu/api.py`. Données en dur dans `jeu/demo.py`, au format de la spec §6.
+- En démo : changer de suspect, onglets Carnet / Fiche (clavier compris), avis sur les témoignages et cases de la fiche fonctionnent dans le navigateur, sans être enregistrés. Questions, cartes et accusation sont inactives.
+- Le code des vraies actions (question, carte, avis, fiche) est déjà dans `EcranPartie.js` : il appellera les endpoints de la spec §5.4 quand Charlotte les aura écrits.
 
 ## Historique des features
 
@@ -180,4 +191,5 @@ Adresse : `/parties/demo/` (nom Django `jeu:partie_demo`), publique, sans base d
 |---|---|---|
 | Gabarit de base | `feature/base-template` | `base.html`, thème CSS, décor de nuit, composant d'illustration des chats |
 | Comptes | `feature/comptes` | Inscription, connexion, déconnexion, menu de l'entête, composants de formulaire, 9 tests |
-| Écran de partie (démo) | `feature/ecran-partie` | Écran de jeu en données en dur, fragments HTMX, onglets carnet / fiche, 17 tests |
+| Écran de partie (démo) | `feature/ecran-partie` | Écran de jeu en données en dur, fragments HTMX (remplacés par Vue, voir plus bas), onglets carnet / fiche, 17 tests |
+| Écran de partie en Vue | `feature/vue-ecran-partie` | Décision D-001 : écran de partie en Vue 3 sans build, API JSON de démo, HTMX retiré, 18 tests |
