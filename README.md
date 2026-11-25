@@ -166,6 +166,7 @@ Les pages de formulaire utilisent le style « dossier » (`.page-formulaire`, `.
 | Déconnexion (POST uniquement) | `/comptes/deconnexion/` | `comptes:deconnexion` |
 
 - L'inscription demande un nom d'agent, un e-mail unique et un mot de passe (règles de sécurité de Django), puis connecte le joueur directement.
+- Chaque champ de mot de passe a un bouton « œil » pour afficher ou masquer ce qui est tapé (`templates/composants/champ.html` + `static/js/oeil.js`). Sans JavaScript, le champ reste un champ de mot de passe normal.
 - Le rôle administrateur n'est jamais donné à l'inscription : il se donne avec `python manage.py createsuperuser` ou dans l'admin Django.
 - Après connexion ou déconnexion, on revient à l'accueil (`LOGIN_REDIRECT_URL` et `LOGOUT_REDIRECT_URL` dans `config/settings.py`).
 

@@ -69,6 +69,7 @@ Les skills du groupe vivent dans `.agents/skills/`. Claude Code les lit dans `.c
 2. Pour chaque fichier livré : indiquer le dossier de destination et s'il est NOUVEAU ou À REMPLACER.
 3. Depuis le 2026-11-25 (demande du professeur : apprendre à travailler avec un agent), l'agent **écrit directement** le code et les `.md` dans le projet, sans ajouter ce qui n'est pas demandé. En échange, il **explique chaque fichier** créé ou modifié (ce qu'il fait et pourquoi), teste avant d'écrire, et liste ce qu'il a vérifié et ce qu'il n'a pas vérifié. Il ne commite pas et ne pousse pas : Loïc relit et lance git lui-même.
 4. Une nouvelle branche GitHub pour chaque feature (nom de branche proposé à chaque fois).
+   Format : `revue-NN/nom-de-la-feature` (numéro de la revue sur deux chiffres, puis la feature en minuscules avec des tirets), par exemple `revue-02/oeil-mot-de-passe`, `revue-03/endpoint-interroger`. Les branches déjà poussées avant cette règle (`feature/vue-ecran-partie`, `feature/revue-2`) gardent leur nom.
 5. Code commenté et expliqué.
 6. Signaler à chaque fois qu'une capture d'écran est à faire pour le rapport (quoi capturer et pourquoi).
 7. Rappeler à chaque PR de demander la review de Charlotte.
