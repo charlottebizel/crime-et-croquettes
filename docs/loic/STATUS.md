@@ -12,7 +12,7 @@
 | LB-003 | Commande charger_demo | en review (PR #19) ; reste : lancement sur Render |
 | LB-004 | Mes parties et vraies parties en lecture | en review (PR #19) ; reste : endpoints POST |
 | LB-005 | Tableau de bord des coûts | en cours (capture avec vrais coûts à faire, après connexion à OpenRouter) |
-| LB-006 | Icône œil sur les mots de passe | ouvert |
+| LB-006 | Icône œil sur les mots de passe | écrit et vérifié, à pousser sur `feature/oeil-mot-de-passe` |
 
 ## Prochaine action
 
