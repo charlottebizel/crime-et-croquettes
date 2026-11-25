@@ -7,6 +7,7 @@ variables Render en production). Voir `.env.example` et CLAUDE.md.
 """
 
 import os
+from decimal import Decimal
 from pathlib import Path
 
 import dj_database_url
@@ -161,3 +162,17 @@ IA_FOURNISSEUR = os.environ.get("IA_FOURNISSEUR", "faux")
 IA_MODELE_GENERATION = os.environ.get("IA_MODELE_GENERATION", "")
 IA_MODELE_INTERROGATOIRE = os.environ.get("IA_MODELE_INTERROGATOIRE", "")
 IA_DELAI_SECONDES = int(os.environ.get("IA_DELAI_SECONDES", "20"))
+
+# --- Coûts affichés en euros ----------------------------------------------
+# OpenRouter facture en dollars : le journal AppelIA garde le coût exact en
+# dollars. Le tableau de bord le convertit en euros pour l'affichage avec le
+# taux du jour de la BCE, demandé à l'API gratuite Frankfurter (gestion/taux.py,
+# mis en cache 6 h). Vide = pas d'appel à l'API (tests, travail hors ligne).
+TAUX_CHANGE_URL = os.environ.get(
+    "TAUX_CHANGE_URL", "https://api.frankfurter.dev/v1/latest?base=EUR&symbols=USD"
+)
+# Taux de secours si l'API ne répond pas (1 € = x $, taux BCE du TAUX_DATE).
+TAUX_USD_POUR_1_EUR = Decimal(os.environ.get("TAUX_USD_POUR_1_EUR", "1.0968"))
+TAUX_DATE = os.environ.get("TAUX_DATE", "2026-11-18")
+# Budget de la clé OpenRouter fournie par le professeur, pour tout le projet.
+BUDGET_IA_EUR = Decimal(os.environ.get("BUDGET_IA_EUR", "1.00"))

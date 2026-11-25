@@ -84,14 +84,18 @@
       {% comment %}
         Navigation. On n'ajoute un lien que quand son URL existe côté
         backend (sinon la balise url fait planter la page) :
-          - maintenant : Connexion, S'inscrire, Déconnexion ;
-          - feature S4 : Nouvelle enquête, Mes parties ;
-          - plus tard  : Tarifs, Profil.
+          - comptes      : Connexion, S'inscrire, Déconnexion ;
+          - joueurs      : Mes parties ; administrateurs : Coûts IA ;
+          - plus tard    : Nouvelle enquête, Tarifs, Profil.
         La déconnexion est un formulaire POST (exigé par Django 5).
       {% endcomment %}
       <nav class="entete__nav" aria-label="Navigation principale">
         {% block nav %}
           {% if user.is_authenticated %}
+            <a href="{% url 'jeu:liste' %}"{% if request.resolver_match.view_name == "jeu:liste" %} aria-current="page"{% endif %}>Mes parties</a>
+            {% if user.is_staff %}
+              <a href="{% url 'gestion:couts' %}"{% if request.resolver_match.view_name == "gestion:couts" %} aria-current="page"{% endif %}>Coûts IA</a>
+            {% endif %}
             <span class="entete__agent">Agent en service : <strong>{{ user.username }}</strong></span>
             <form class="entete__form" method="post" action="{% url 'comptes:deconnexion' %}">
               {% csrf_token %}

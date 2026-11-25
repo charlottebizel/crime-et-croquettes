@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static %}
+{% comment %}
+  =====================================================================
+  templates/gestion/couts.html — Tableau de bord des coûts de l'IA (ticket LB-005)
+  =====================================================================
+  Vue : gestion.views.couts   ·   URL : gestion:couts   ·   administrateurs seulement
+  Contexte : url_api (adresse de /api/gestion/couts/)
+
+  Coquille de l'application Vue static/js/gestion/ (décision D-001).
+{% endcomment %}
+
+{% block titre %}Coûts de l'IA · Administration · Crimes et Croquette{% endblock %}
+
+{% block head_extra %}
+  <link rel="stylesheet" href="{% static 'css/partie.css' %}">
+  <link rel="stylesheet" href="{% static 'css/gestion.css' %}">
+  {% include "composants/vue.html" %}
+{% endblock %}
+
+{% block contenu %}
+  <div id="app-couts" data-url-api="{{ url_api }}">
+    <p class="chargement machine">Calcul des coûts…</p>
+  </div>
+  <noscript>
+    <p class="erreur-chargement">Le tableau de bord a besoin de JavaScript. Les mêmes chiffres sont consultables dans l'admin Django (Appels IA).</p>
+  </noscript>
+{% endblock %}
+
+{% block scripts %}
+  <script type="module" src="{% static 'js/gestion/main.js' %}"></script>
+{% endblock %}
